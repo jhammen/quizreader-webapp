@@ -154,11 +154,11 @@ class TextView extends LitElement {
         this.dispatchEvent(new CustomEvent('work-complete', { bubbles: true, composed: true }));
       }
     } else {
-      let newWords = [];
-      while (newWords.length == 0 && this.paragraph < this.docInfo.length) {
-        newWords = newWords.concat(this.unknownWords(this.docInfo[this.paragraph++]));
+      // move to next paragraph, show quiz if unknown words
+      let newWords = this.unknownWords(this.docInfo[this.paragraph++]);
+      if(newWords.length) {
+          this.dispatchEvent(new CustomEvent('new-words', { detail: newWords }));    	 
       }
-      this.dispatchEvent(new CustomEvent('new-words', { detail: newWords }));
     }
   }
 
