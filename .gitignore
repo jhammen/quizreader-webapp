@@ -1,6 +1,10 @@
+# NPM stuff
 node_modules/
 dist/
+# language sites
+sites.json
 es
 fr
+# eclips files
 .project
-sites.json
+.settings

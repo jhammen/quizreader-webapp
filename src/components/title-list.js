@@ -30,7 +30,7 @@ class TitleList extends LitElement {
   render() {
     return html `
       <div>
-        <h2><img height="20" width="30" src="${this.language}/flag.png"/> Available Titles</h2>
+        <h2>Available Titles</h2>
         <ul>
         ${this.titles.map(item =>
           html`<li><app-link href="/${this.language}/read/${item.path}/${item.chapter}" text="${item.name}"></app-link></li>`)}
