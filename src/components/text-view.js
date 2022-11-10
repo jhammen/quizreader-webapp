@@ -35,7 +35,7 @@ class TextView extends LitElement {
     return html `
       <style>
         #scroller { height: calc(100vh - 120px); overflow: auto; }
-        #content > :nth-child(n +${this.paragraph+1}) { display: none; }
+        #content > :nth-child(n +${this.paragraph+2}) { display: none; }
       </style>
       <div id="scroller">
         <div id="content">
@@ -70,7 +70,6 @@ class TextView extends LitElement {
         .then(function (response) { return response.json(); })
         .then(function (json) {
           this.filecount = json.length;
-          this.wordService.loadWordlist(this.language + '/txt/' + value + '/cognates.json');
         }.bind(this));
     }
   }
@@ -107,19 +106,8 @@ class TextView extends LitElement {
             }
             this.docInfo.push(keys);
           }
-          // show up to paragraph with unknown words
+          // TODO: lookup last paragraph read and show to there
           this.paragraph = 0;
-          let unknown = this.unknownWords(this.docInfo[0]);
-          while (unknown.length == 0 && this.paragraph++ < this.docInfo.length - 1) {
-            unknown = this.unknownWords(this.docInfo[this.paragraph]);
-          }
-          // start quiz if 1st paragraph is unknown
-          let quizWords = [];
-          if (!this.paragraph) {
-            this.paragraph++;
-            quizWords = unknown;
-          }
-          this.dispatchEvent(new CustomEvent('new-words', { detail: quizWords }));
         }.bind(this));
     }
   }
@@ -136,7 +124,7 @@ class TextView extends LitElement {
 
   next() {
     // no more paragraphs in this file
-    if (this.paragraph == this.docInfo.length) {
+    if (this.paragraph == this.docInfo.length - 1) {
       // request next file if exists
       if (this.chapter < this.filecount) {
         const nextFile = parseInt(this.chapter) + 1;

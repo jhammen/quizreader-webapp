@@ -23,6 +23,10 @@ import './title-toc.js';
 import './vocab-list.js';
 import './qr-router.js';
 
+function ife(field, def = "") {
+	return field ? field : def
+}
+	
 class QrApp extends LitElement {
 
 	static get properties() {
@@ -69,10 +73,10 @@ class QrApp extends LitElement {
 
 	route(dest) {
 		const [, lang, command, work, chapter] = dest.split("/");
-		this.language = lang ? lang : "";
-		this.command = command ? command : "home";
-		this.work = work ? work : "";
-		this.chapter = chapter ? chapter : "";
+		this.language = ife(lang);
+		this.command = ife(command, "home");
+		this.work = ife(work);
+		this.chapter = ife(chapter);
 		// console.log("routing", this.language, this.command, this.work, this.chapter);
 	}
 

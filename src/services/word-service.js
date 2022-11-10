@@ -54,6 +54,7 @@ export class WordService {
     localStorage.setItem('knownWords-' + this.lang, JSON.stringify(this.knownWords));
   }
 
+  // TODO: remove if unused
   loadWordlist(path) {
     return fetch(path)
       .then(function (response) { return response.json(); })
