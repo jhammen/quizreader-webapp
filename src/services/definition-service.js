@@ -25,30 +25,36 @@ export class DefinitionService {
   constructor(lang) {
     this.language = lang;
     // sources sorted by priority
-    this.sources = ["qr", "wikt"]; // TODO: add current title
+    this.sources = [ "qr", "wikt" ]; // TODO: add current title
   }
 
   getDefinitions(word, type, source) {
     const sources = this.sources.slice();
-    if (source) { sources.unshift(source); }
+    if(source) {
+      sources.unshift(source);
+    }
     return fetch(this.defPath(word))
-      .then(function (response) { return response.json(); })
-      .then(function (json) {
-        const ret = [];
-        for (let source of sources) {
-          if (json[source]) {
-            for (let def of json[source]) {
-              if (def.t === type) {
-                def.w = word;
-                def.s = source;
-                ret.push(def);
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(json) {
+          const ret = [];
+          for(let source of sources) {
+            if(json[source]) {
+              for(let def of json[source]) {
+                if(def.t === type) {
+                  def.w = word;
+                  def.s = source;
+                  ret.push(def);
+                }
+              }
+              if(ret.length) {
+                return ret;
               }
             }
-            if (ret.length) { return ret; }
           }
-        }
-        return ret;
-      }.bind(this));
+          return ret;
+        }.bind(this));
   }
 
   defPath(word) {
@@ -57,7 +63,7 @@ export class DefinitionService {
   }
 
   static instance(language) {
-    if (!services[language]) {
+    if(!services[language]) {
       services[language] = new DefinitionService(language);
     }
     return services[language];

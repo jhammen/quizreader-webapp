@@ -14,28 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { LitElement, html } from 'lit-element';
 import './def-popup.js';
 import './more-button.js';
-import { WordService } from '../services/word-service.js';
+
+import {html, LitElement} from 'lit-element';
+
+import {WordService} from '../services/word-service.js';
 
 class TextView extends LitElement {
 
   static get properties() {
     return {
-      language: { type: String },
-      work: { type: String },
-      chapter: { type: String },
-      paragraph: { type: Number },
-      defWord: { type: String }
+      language : {type : String},
+      work : {type : String},
+      chapter : {type : String},
+      paragraph : {type : Number},
+      defWord : {type : String}
     };
   }
 
   render() {
-    return html `
+    return html`
       <style>
         #scroller { height: calc(100vh - 120px); overflow: auto; }
-        #content > :nth-child(n +${this.paragraph+2}) { display: none; }
+        #content > :nth-child(n +${this.paragraph + 2}) { display: none; }
       </style>
       <div id="scroller">
         <div id="content">
@@ -52,70 +54,78 @@ class TextView extends LitElement {
     this.defWord = "null";
   }
 
-  get language() { return this._language; }
+  get language() {
+    return this._language;
+  }
 
   set language(value) {
-    if (value) {
+    if(value) {
       this._language = value;
       this.wordService = WordService.instance(value);
     }
   }
 
-  get work() { return this._work; }
+  get work() {
+    return this._work;
+  }
 
   set work(value) {
-    if (value) {
+    if(value) {
       this._work = value;
       fetch(this.language + '/txt/' + value + '/toc.json')
-        .then(function (response) { return response.json(); })
-        .then(function (json) {
-          this.filecount = json.length;
-        }.bind(this));
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(json) {
+            this.filecount = json.length;
+          }.bind(this));
     }
   }
 
-  get chapter() { return this._chapter; }
+  get chapter() {
+    return this._chapter;
+  }
 
   set chapter(value) {
-    if (value) {
+    if(value) {
       this._chapter = value;
       const file = ("000" + value).substr(-3, 3);
       const path = this.language + "/txt/" + this.work + "/t" + file + ".html";
       this.docInfo = [];
       fetch(path)
-        .then(function (response) {
-          return response.text();
-        })
-        .then(function (html) {
-          const content = this.shadowRoot.getElementById("content");
-          content.innerHTML = html;
-          for (const para of content.children) {
-            let hash = {};
-            let linkList = para.querySelectorAll("a");
-            for (const link of linkList) {
-              const base = this.baseWord(link);
-              link.addEventListener('click', this.showDef.bind(this));
-              link.title = base;
-              const key = base + ":" + link.dataset.type;
-              hash[key] = true;
+          .then(function(response) {
+            return response.text();
+          })
+          .then(function(html) {
+            const content = this.shadowRoot.getElementById("content");
+            content.innerHTML = html;
+            for(const para of content.children) {
+              let hash = {};
+              let linkList = para.querySelectorAll("a");
+              for(const link of linkList) {
+                const base = this.baseWord(link);
+                link.addEventListener('click', this.showDef.bind(this));
+                link.title = base;
+                const key = base + ":" + link.dataset.type;
+                hash[key] = true;
+              }
+              const keys = [];
+              for(const key in hash) {
+                let [word, type] = key.split(":");
+                keys.push({word : word, type : type});
+              }
+              this.docInfo.push(keys);
             }
-            const keys = [];
-            for (const key in hash) {
-              let [word, type] = key.split(":");
-              keys.push({ word: word, type: type });
-            }
-            this.docInfo.push(keys);
-          }
-          // TODO: lookup last paragraph read and show to there
-          this.paragraph = 0;
-        }.bind(this));
+            // TODO: lookup last paragraph read and show to there
+            this.paragraph = 0;
+          }.bind(this));
     }
   }
 
   baseWord(elem) {
-    if (elem.dataset.base) {
+    if(elem.dataset.base) {
       return elem.dataset.base;
-    } else if (elem.dataset.word) {
+    } else if(elem.dataset.word) {
       return elem.dataset.word;
     } else {
       return elem.textContent;
@@ -124,14 +134,14 @@ class TextView extends LitElement {
 
   next() {
     // no more paragraphs in this file
-    if (this.paragraph == this.docInfo.length - 1) {
+    if(this.paragraph == this.docInfo.length - 1) {
       // request next file if exists
-      if (this.chapter < this.filecount) {
+      if(this.chapter < this.filecount) {
         const nextFile = parseInt(this.chapter) + 1;
         // save bookmark position
         localStorage.setItem("bkmk-" + this.work, nextFile);
         // notify chapter complete
-        this.dispatchEvent(new CustomEvent('chapter-complete', { bubbles: true, composed: true, detail: nextFile }));
+        this.dispatchEvent(new CustomEvent('chapter-complete', {bubbles : true, composed : true, detail : nextFile}));
       }
       // no more files - finished with title
       else {
@@ -139,13 +149,13 @@ class TextView extends LitElement {
         // remove bookmarker
         localStorage.removeItem("bkmk-" + this.work);
         // notify title complete
-        this.dispatchEvent(new CustomEvent('work-complete', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('work-complete', {bubbles : true, composed : true}));
       }
     } else {
       // move to next paragraph, show quiz if unknown words
       let newWords = this.unknownWords(this.docInfo[this.paragraph++]);
       if(newWords.length) {
-          this.dispatchEvent(new CustomEvent('new-words', { detail: newWords }));    	 
+        this.dispatchEvent(new CustomEvent('new-words', {detail : newWords}));
       }
     }
   }
@@ -157,11 +167,8 @@ class TextView extends LitElement {
   showDef(evt) {
     const elem = evt.target;
     const word = elem.dataset.word;
-    this.defWord = JSON.stringify({
-      word: word ? word : elem.textContent,
-      root: elem.dataset.base,
-      type: elem.dataset.type
-    });
+    this.defWord =
+        JSON.stringify({word : word ? word : elem.textContent, root : elem.dataset.base, type : elem.dataset.type});
   }
 }
 

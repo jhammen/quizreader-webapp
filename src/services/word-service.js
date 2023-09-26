@@ -57,17 +57,19 @@ export class WordService {
   // TODO: remove if unused
   loadWordlist(path) {
     return fetch(path)
-      .then(function (response) { return response.json(); })
-      .then(function (json) {
-        const items = json.map(item => new Object({ word: item.w, type: item.t }));
-        this.knownWords = this.knownWords.concat(items.filter(item => !this.isKnown(item)));
-        this.save();
-        return json;
-      }.bind(this));
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(json) {
+          const items = json.map(item => new Object({word : item.w, type : item.t}));
+          this.knownWords = this.knownWords.concat(items.filter(item => !this.isKnown(item)));
+          this.save();
+          return json;
+        }.bind(this));
   }
 
   static instance(language) {
-    if (!services[language]) {
+    if(!services[language]) {
       services[language] = new WordService(language);
     }
     return services[language];

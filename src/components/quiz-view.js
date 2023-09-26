@@ -14,10 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { LitElement, html } from 'lit-element';
 import './source-info.js';
-import { DefinitionService } from '../services/definition-service.js';
-import { WordService } from '../services/word-service.js';
+
+import {html, LitElement} from 'lit-element';
+
+import {DefinitionService} from '../services/definition-service.js';
+import {WordService} from '../services/word-service.js';
 
 const OPTIONS_COUNT = 3;
 
@@ -25,18 +27,18 @@ class QuizView extends LitElement {
 
   static get properties() {
     return {
-      choice: Array, // definition choices
-      language: String, // language code
-      word: Object, // current quiz word
-      sources: Array, // def attribution sources
-      colors: Array, // choice highlight colors
-      complete: Boolean,
-      correct: Boolean
+      choice : Array,    // definition choices
+      language : String, // language code
+      word : Object,     // current quiz word
+      sources : Array,   // def attribution sources
+      colors : Array,    // choice highlight colors
+      complete : Boolean,
+      correct : Boolean
     };
   }
 
   render() {
-    return html `
+    return html`
       <style>
       .choice {
         border: 1px solid #CCCCCC;
@@ -49,15 +51,17 @@ class QuizView extends LitElement {
       </style>
       <div>
         <h3>${this.word.word}</h3>
-        ${this.choice.map((val, i) =>
-          html`<div class="choice ${this.selected[i]}" data-choice="${i}" @click="${this.choose}">
+        ${
+        this.choice.map((val, i) =>
+                            html`<div class="choice ${this.selected[i]}" data-choice="${i}" @click="${this.choose}">
           <ul>${val.map((txt) => html`<li>${txt}</li>`)}
           </ul>
           </div>`)}
       </div>
       <br/>
-      ${Object.keys(this.sources).map((val, i) =>
-        html`<source-info label="definition source" source="${val}"></source-info>`)}
+      ${
+        Object.keys(this.sources)
+            .map((val, i) => html`<source-info label="definition source" source="${val}"></source-info>`)}
       <br/>
       <more-button @click="${this.finished}"></more-button>
     `;
@@ -83,15 +87,17 @@ class QuizView extends LitElement {
     this.wordService = WordService.instance(value);
   }
 
-  get word() { return this._word; }
+  get word() {
+    return this._word;
+  }
 
   set word(value) {
-    if (value) {
+    if(value) {
       const oldValue = this._word;
       this._word = JSON.parse(value);
       this.reset();
       this.addWord(this._word, true);
-      for (var i = 0; i < OPTIONS_COUNT - 1; i++) {
+      for(var i = 0; i < OPTIONS_COUNT - 1; i++) {
         this.addWord(this.wordService.randomWord(this._word.type), false);
       }
       this.requestUpdate('word', oldValue);
@@ -100,8 +106,8 @@ class QuizView extends LitElement {
 
   randomIndex() {
     const open = [];
-    for (var i = 0; i < OPTIONS_COUNT; i++) {
-      if (!this.choice[i]) {
+    for(var i = 0; i < OPTIONS_COUNT; i++) {
+      if(!this.choice[i]) {
         open.push(i);
       }
     }
@@ -109,34 +115,35 @@ class QuizView extends LitElement {
   }
 
   addWord(word, correct) {
-    this.definitionService.getDefinitions(word.word, word.type)
-      .then(function (defs) {
-        const index = this.randomIndex();
-        if (correct) { this.answer = index; }
-        if (defs.length) {
-          this.choice[index] = defs.map(item => item.x).slice(0, 3);
-          defs.map(item => this.sources[item.s] = true);
-          this.requestUpdate();
-        } else {
-          this.choice[index] = ["[none of the above]"];
-          this.requestUpdate();
-        }
-      }.bind(this));
+    this.definitionService.getDefinitions(word.word, word.type).then(function(defs) {
+      const index = this.randomIndex();
+      if(correct) {
+        this.answer = index;
+      }
+      if(defs.length) {
+        this.choice[index] = defs.map(item => item.x).slice(0, 3);
+        defs.map(item => this.sources[item.s] = true);
+        this.requestUpdate();
+      } else {
+        this.choice[index] = [ "[none of the above]" ];
+        this.requestUpdate();
+      }
+    }.bind(this));
   }
 
   finished() {
-    if (this.correct) {
+    if(this.correct) {
       this.wordService.add(this.word);
     }
-    this.dispatchEvent(new CustomEvent('complete', { detail: this.correct }));
+    this.dispatchEvent(new CustomEvent('complete', {detail : this.correct}));
   }
 
   choose(evt) {
-    if (!this.complete) {
+    if(!this.complete) {
       // find choice on outer element
       let elem = evt.target;
       let choice = elem.dataset.choice;
-      while (!choice) {
+      while(!choice) {
         elem = elem.parentElement;
         choice = elem.dataset.choice;
       }
