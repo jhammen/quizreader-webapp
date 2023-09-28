@@ -37,24 +37,29 @@ export class DefinitionService {
         .then(function(response) {
           return response.json();
         })
-        .then(function(json) {
-          const ret = [];
-          for(let source of sources) {
-            if(json[source]) {
-              for(let def of json[source]) {
-                if(def.t === type) {
-                  def.w = word;
-                  def.s = source;
-                  ret.push(def);
+        .then(
+            function(json) {
+              const ret = [];
+              for(let source of sources) {
+                if(json[source]) {
+                  for(let def of json[source]) {
+                    if(def.t === type) {
+                      def.w = word;
+                      def.s = source;
+                      ret.push(def);
+                    }
+                  }
+                  if(ret.length) {
+                    return ret;
+                  }
                 }
               }
-              if(ret.length) {
-                return ret;
-              }
-            }
-          }
-          return ret;
-        }.bind(this));
+              return ret;
+            }.bind(this),
+            function(error) {
+              console.log("definition load", error);
+              return [];
+            });
   }
 
   defPath(word) {

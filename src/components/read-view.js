@@ -14,31 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { LitElement, html } from 'lit-element';
 import './text-view.js';
 import './quiz-view.js';
+
+import {html, LitElement} from 'lit-element';
 
 class ReadView extends LitElement {
 
   static get properties() {
     return {
-      language: { type: String },
-      work: { type: String },
-      chapter: { type: String },
-      mode: { type: String },
-      quizword: { type: Object }
+      language : {type : String},
+      work : {type : String},
+      chapter : {type : String},
+      mode : {type : String},
+      quizword : {type : Object}
     };
   }
 
   render() {
-    return html `
+    return html`
     <qr-router page="${this.mode}">
       <div slot="quiz">
         <quiz-view language="${this.language}" word="${this.quizword}" @complete="${this.quizAnswer}">
         </quiz-view>
       </div>
       <div slot="read">
-        <text-view id="text" language="${this.language}" work="${this.work}" chapter="${this.chapter}" @new-words="${this.startQuiz}">
+        <text-view id="text" language="${this.language}" work="${this.work}" chapter="${this.chapter}" @new-words="${
+        this.startQuiz}">
         </text-view>
       </div>
     `;
@@ -59,7 +61,7 @@ class ReadView extends LitElement {
   }
 
   startQuiz(evt) {
-    if (evt.detail.length) {
+    if(evt.detail.length) {
       this.words = evt.detail;
       this.shuffle();
       this.quizword = this.nextWord();
@@ -71,7 +73,7 @@ class ReadView extends LitElement {
 
   quizAnswer(evt) {
     const success = evt.detail;
-    if (this.words.length > 0) {
+    if(this.words.length > 0) {
       this.quizword = this.nextWord();
     } else {
       this.quizMode(false);
@@ -79,17 +81,14 @@ class ReadView extends LitElement {
   }
 
   shuffle() {
-    var i = 0,
-      j = 0,
-      w = null;
-    for (i = this.words.length - 1; i > 0; i--) {
+    var i = 0, j = 0, w = null;
+    for(i = this.words.length - 1; i > 0; i--) {
       j = Math.floor(Math.random() * (i + 1));
       w = this.words[i];
       this.words[i] = this.words[j];
       this.words[j] = w;
     }
   }
-
 }
 
 window.customElements.define('read-view', ReadView);

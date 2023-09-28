@@ -14,24 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { LitElement, html } from 'lit-element';
 import './def-popup.js';
 import './text-view.js';
-import { WordService } from '../services/word-service.js';
+
+import {html, LitElement} from 'lit-element';
+
+import {WordService} from '../services/word-service.js';
 
 class VocabView extends LitElement {
 
   static get properties() {
     return {
-      language: { type: String },
-      work: { type: String },
-      chapter: { type: String },
-      words: { type: Array },
-      defWord: { type: String }
+      language : {type : String},
+      work : {type : String},
+      chapter : {type : String},
+      words : {type : Array},
+      defWord : {type : String}
     };
   }
   render() {
-    return html `
+    return html`
       <style>
         #scroller { height: calc(100vh - 155px); overflow: auto; }
         .A { border: 1px solid grey; background: #fffae9; }
@@ -47,8 +49,10 @@ class VocabView extends LitElement {
       <h2>Vocab</h2>
       <h3>${this.words.length} entries</h3>
       <div>
-       ${this.words.map(item =>
-         html`<a class="${item.type}" @click="${() => this.defWord = JSON.stringify(item)}">${item.word}</a> `)}
+       ${
+        this.words.map(
+            item =>
+                html`<a class="${item.type}" @click="${() => this.defWord = JSON.stringify(item)}">${item.word}</a> `)}
       </div>
       <def-popup language="${this.language}" word="${this.defWord}"></def-popup>
       </div>
@@ -66,7 +70,7 @@ class VocabView extends LitElement {
   }
 
   set language(lang) {
-    if (lang) {
+    if(lang) {
       this._language = lang;
       this.wordService = WordService.instance(lang);
       this.refresh();
@@ -74,20 +78,22 @@ class VocabView extends LitElement {
   }
 
   set work(value) {
-    if (value) {
+    if(value) {
       this.refresh();
     }
   }
 
   set chapter(value) {
-    if (value) {
+    if(value) {
       this.refresh();
     }
   }
 
   refresh() {
-    this.words = this.wordService.getAll();
-    this.words.sort(this.comparator);
+    this.wordService.getAll().then(function(result) {
+      this.words = result;
+      this.words.sort(this.comparator);
+    }.bind(this));
   }
 
   comparator(word1, word2) {

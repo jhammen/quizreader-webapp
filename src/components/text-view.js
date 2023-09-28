@@ -103,11 +103,15 @@ class TextView extends LitElement {
               let hash = {};
               let linkList = para.querySelectorAll("a");
               for(const link of linkList) {
+                // get base word + type
                 const base = this.baseWord(link);
+                const type = link.dataset.type;
+                // hash for docInfo
+                hash[base + ":" + type] = true;
+                // set event handler to show def
                 link.addEventListener('click', this.showDef.bind(this));
+                // title for rollover
                 link.title = base;
-                const key = base + ":" + link.dataset.type;
-                hash[key] = true;
               }
               const keys = [];
               for(const key in hash) {

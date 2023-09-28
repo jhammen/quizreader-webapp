@@ -83,8 +83,10 @@ class QuizView extends LitElement {
   }
 
   set language(value) {
-    this.definitionService = DefinitionService.instance(value);
-    this.wordService = WordService.instance(value);
+    if(value) {
+      this.definitionService = DefinitionService.instance(value);
+      this.wordService = WordService.instance(value);
+    }
   }
 
   get word() {
@@ -133,7 +135,8 @@ class QuizView extends LitElement {
 
   finished() {
     if(this.correct) {
-      this.wordService.add(this.word);
+      this.wordService.save(this.word).then((count) =>
+                                                window.dispatchEvent(new CustomEvent('word-count', {detail : count})));
     }
     this.dispatchEvent(new CustomEvent('complete', {detail : this.correct}));
   }

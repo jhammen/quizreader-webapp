@@ -14,48 +14,43 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import {
-    LitElement,
-    html
-} from 'lit-element';
 import './app-link.js';
-import {
-    WordService
-} from '../services/word-service.js';
+
+import {html, LitElement} from 'lit-element';
 
 class LangList extends LitElement {
 
-    static get properties() {
-        return {
-            languages: Array
-        };
-    }
+  static get properties() {
+    return {languages : Array};
+  }
 
-    render() {
-        return html`
+  render() {
+    return html`
       <style>a {color: #5555FF; cursor: pointer;}</style>
       <div>
         <h2>Available Languages</h2>
         <ul>
-        ${Object.keys(this.languages).map(i =>
-			html`<li><img height="20" width="30" src="${i}/flag.png"> <app-link href="/${i}/titles" text="${this.languages[i]}">`)}
+        ${
+        Object.keys(this.languages)
+            .map(i => html`<li><img height="20" width="30" src="${i}/flag.png"> <app-link href="/${i}/titles" text="${
+                     this.languages[i]}">`)}
         </ul>
       </div>
     `;
-    }
+  }
 
-    constructor() {
-        super();
-        this.languages = [];
-        fetch("/sites.json")
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(json) {
-                console.log(json);
-                this.languages = json;
-            }.bind(this));
-    }
+  constructor() {
+    super();
+    this.languages = [];
+    fetch("/sites.json")
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(json) {
+          console.log(json);
+          this.languages = json;
+        }.bind(this));
+  }
 }
 
 window.customElements.define('lang-list', LangList);
