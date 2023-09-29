@@ -48,10 +48,11 @@ class QrApp extends LitElement {
       this.route(location.hash.substring(1));
     }.bind(this);
     window.addEventListener('link', (e) => { this.redirect(e.detail); });
-    window.addEventListener('word-count', (e) => { this.count(e.detail); });
+    window.addEventListener('word-count', (e) => { this.updateCount(e.detail); });
     this.language = "";
     this.work = "";
     this.chapter = "";
+    this.wordcount = {};
   }
 
   firstUpdated(props) {
@@ -118,7 +119,7 @@ class QrApp extends LitElement {
     !this.language}"></app-link>
               ${
         this.language ?
-        html`<span class="rightside">&nbsp;0000</span>              
+        html`<span class="rightside">&nbsp;${this.wordcount[this.language]}</span>              
               	<img height="20" width="30" class="rightside" visible="hidden" src="${this.language}/flag.png"/>` :
         ""}
             </div>
@@ -146,8 +147,9 @@ class QrApp extends LitElement {
           </div>`;
   }
 
-  count(c) {
-    console.log('word count', c)
+  updateCount(count) {
+    this.wordcount[this.language] = ("0000" + count).substr(-4, 4);
+    this.requestUpdate();
   }
 
   nextChapter(evt) {

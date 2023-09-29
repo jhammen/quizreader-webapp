@@ -54,6 +54,7 @@ export class WordService {
         } else {
           // end of entries
           console.log("word load complete for " + language, count);
+          window.dispatchEvent(new CustomEvent('word-count', {detail : count}));
         }
       };
     });
