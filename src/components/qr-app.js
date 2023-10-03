@@ -115,13 +115,11 @@ class QrApp extends LitElement {
               <app-link href='/' text='Home'></app-link>
               <app-link href='/${this.language}/titles' text='Titles' ?inactive="${!this.language}"></app-link>
               <app-link href='/${this.language}/toc/${this.work}' text='Contents' ?inactive="${!this.work}"></app-link>
-              <app-link href='/${this.language}/vocab/${this.work}' text='Vocab' ?inactive="${
-    !this.language}"></app-link>
               ${
-        this.language ?
-        html`<span class="rightside">&nbsp;${this.wordcount[this.language]}</span>              
+        this.language ? html`<span class="rightside">&nbsp;
+        <app-link href='/${this.language}/vocab/${this.work}' text='${this.wordcount[this.language]}'></app-link></span>
               	<img height="20" width="30" class="rightside" visible="hidden" src="${this.language}/flag.png"/>` :
-        ""}
+                        ""}
             </div>
             <div id="content" class="bubble">
             <qr-router page="${this.command}">
@@ -139,7 +137,8 @@ class QrApp extends LitElement {
                     @chapter-complete="${this.nextChapter}" @work-complete="${this.showTitles}"></read-view>
               </div>
               <div slot="vocab">
-                <vocab-view language="${this.language}" work="${this.work}" chapter="${this.chapter}"></vocab-view>
+                <vocab-view language="${this.language}" work="${this.work}" chapter="${this.chapter}" 
+                  count="${this.wordcount[this.language]}"></vocab-view>
               </div>
             </qr-router>
           </div>

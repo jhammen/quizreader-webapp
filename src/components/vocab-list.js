@@ -24,13 +24,7 @@ import {WordService} from '../services/word-service.js';
 class VocabView extends LitElement {
 
   static get properties() {
-    return {
-      language : {type : String},
-      work : {type : String},
-      chapter : {type : String},
-      words : {type : Array},
-      defWord : {type : String}
-    };
+    return {language : {type : String}, count : {type : String}, words : {type : Array}, defWord : {type : String}};
   }
   render() {
     return html`
@@ -77,16 +71,8 @@ class VocabView extends LitElement {
     }
   }
 
-  set work(value) {
-    if(value) {
-      this.refresh();
-    }
-  }
-
-  set chapter(value) {
-    if(value) {
-      this.refresh();
-    }
+  set count(count) {
+    this.refresh();
   }
 
   refresh() {
