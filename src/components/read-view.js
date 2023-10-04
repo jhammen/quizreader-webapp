@@ -48,8 +48,16 @@ class ReadView extends LitElement {
 
   constructor() {
     super();
-    this.quizword = "";
-    this.quizMode(false);
+    this.init();
+  }
+
+  get work() {
+    return this._work;
+  }
+
+  set work(value) {
+    this._work = value;
+    this.init();
   }
 
   quizMode(b) {
@@ -63,7 +71,13 @@ class ReadView extends LitElement {
   startQuiz(evt) {
     if(evt.detail.length) {
       this.words = evt.detail;
-      this.shuffle();
+      // shuffle
+      for(var i = this.words.length - 1; i > 0; i--) {
+        var pick = Math.floor(Math.random() * (i + 1));
+        var orig = this.words[i];
+        this.words[i] = this.words[pick];
+        this.words[pick] = orig;
+      }
       this.quizword = this.nextWord();
       this.quizMode(true);
     } else {
@@ -80,14 +94,10 @@ class ReadView extends LitElement {
     }
   }
 
-  shuffle() {
-    var i = 0, j = 0, w = null;
-    for(i = this.words.length - 1; i > 0; i--) {
-      j = Math.floor(Math.random() * (i + 1));
-      w = this.words[i];
-      this.words[i] = this.words[j];
-      this.words[j] = w;
-    }
+  init() { // private
+    this.quizword = "";
+    this.quizMode(false);
+    this.words = [];
   }
 }
 
