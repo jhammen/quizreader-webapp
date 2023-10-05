@@ -53,20 +53,21 @@ export class WordService {
           count++;
         } else {
           // end of entries
-          console.log("word load complete for " + language, count);
           window.dispatchEvent(new CustomEvent('word-count', {detail : count}));
         }
       };
     });
   }
 
-  randomWord(type) {
+  randomWord(type, excludes) {
     const typed = this.quizwords[type];
-    // console.log("quizword type " + type, this.quizwords[type])
-    if(typed.length < 2) {
+    if(excludes.length >= typed.length) {
       return null;
     }
-    const word = typed[Math.floor(Math.random() * typed.length)];
+    let word = typed[Math.floor(Math.random() * typed.length)];
+    while(excludes.indexOf(word) >= 0) {
+      word = typed[Math.floor(Math.random() * typed.length)];
+    }
     return {'word' : word, 'type' : type};
   }
 
@@ -129,7 +130,7 @@ export class WordService {
     if(!this.quizwords[type]) {
       this.quizwords[type] = [ word.word ];
     }
-    else if(!(word.word in this.quizwords[type])) {
+    else if(this.quizwords[type].indexOf(word.word) < 0) {
       this.quizwords[type].push(word.word);
     }
     // console.log("ADD ", word, this.quizwords)

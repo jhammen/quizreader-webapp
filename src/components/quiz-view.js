@@ -27,13 +27,8 @@ class QuizView extends LitElement {
 
   static get properties() {
     return {
-      choice : Array,    // definition choices
       language : String, // language code
-      word : Object,     // current quiz word
-      sources : Array,   // def attribution sources
-      colors : Array,    // choice highlight colors
-      complete : Boolean,
-      correct : Boolean
+      word : Object      // current quiz word
     };
   }
 
@@ -53,7 +48,7 @@ class QuizView extends LitElement {
         <h3>${this.word.word}</h3>
         ${
         this.choice.map((val, i) =>
-                            html`<div class="choice ${this.selected[i]}" data-choice="${i}" @click="${this.choose}">
+                            html`<div class="choice ${this.selstyle(i)}" data-choice="${i}" @click="${this.choose}">
           <ul>${val.map((txt) => html`<li>${txt}</li>`)}
           </ul>
           </div>`)}
@@ -67,18 +62,20 @@ class QuizView extends LitElement {
     `;
   }
 
+  // css style for selected answer
+  selstyle(i) {
+    return this.selected == i ? this.correct() ? 'right' : 'wrong' : '';
+  }
+
   constructor() {
     super();
-    this.sources = [];
+    this.choice = [];
     this._word = {};
     this.reset();
   }
 
   reset() {
-    this.complete = false;
-    this.correct = false;
-    this.choice = Array(OPTIONS_COUNT);
-    this.selected = Array(OPTIONS_COUNT);
+    this.selected = null;
     this.sources = {};
   }
 
@@ -95,54 +92,72 @@ class QuizView extends LitElement {
 
   set word(value) {
     if(value) {
-      const oldValue = this._word;
       this._word = JSON.parse(value);
       this.reset();
-      this.addWord(this._word, true);
-      for(var i = 0; i < OPTIONS_COUNT - 1; i++) {
-        this.addWord(this.wordService.randomWord(this._word.type), false);
+      // select some words for incorrect definitions
+      const type = this._word.type;
+      const chosen = [];
+      chosen.push(this._word.word);
+      for(var i = 1; i < OPTIONS_COUNT; i++) {
+        const rand = this.wordService.randomWord(type, chosen);
+        if(rand) {
+          chosen.push(rand.word);
+        }
       }
-      this.requestUpdate('word', oldValue);
+      const count = chosen.length;
+      this.choice = Array(count);
+      // add correct answer
+      this.answer = Math.floor(count * Math.random());
+      this.addChoice(this._word, this.answer);
+      // array to store used indices
+      const used = Array(count);
+      used[this.answer] = true;
+      // add incorrect answers
+      for(var i = 1; i < chosen.length; i++) {
+        const index = this.randomIndex(used);
+        this.addChoice({word : chosen[i], type : type}, index);
+        used[index] = true;
+      }
     }
   }
 
-  randomIndex() {
+  randomIndex(used) { // private
     const open = [];
-    for(var i = 0; i < OPTIONS_COUNT; i++) {
-      if(!this.choice[i]) {
+    for(var i = 0; i < used.length; i++) {
+      if(!used[i]) {
         open.push(i);
       }
     }
-    return open[Math.floor(Math.random() * Math.floor(open.length))];
+    return open[Math.floor(Math.random() * open.length)];
   }
 
-  addWord(word, correct) {
+  addChoice(word, index) { // private
     this.definitionService.getDefinitions(word.word, word.type).then(function(defs) {
-      const index = this.randomIndex();
-      if(correct) {
-        this.answer = index;
-      }
       if(defs.length) {
         this.choice[index] = defs.map(item => item.x).slice(0, 3);
         defs.map(item => this.sources[item.s] = true);
         this.requestUpdate();
       } else {
-        this.choice[index] = [ "[none of the above]" ];
+        this.choice[index] = [ "[error: missing definition for '" + word.word + "']" ];
         this.requestUpdate();
       }
     }.bind(this));
   }
 
   finished() {
-    if(this.correct) {
+    if(this.correct()) {
       this.wordService.save(this.word).then((count) =>
                                                 window.dispatchEvent(new CustomEvent('word-count', {detail : count})));
     }
-    this.dispatchEvent(new CustomEvent('complete', {detail : this.correct}));
+    this.dispatchEvent(new CustomEvent('complete', {detail : this.correct()}));
+  }
+
+  correct() {
+    return this.answer == this.selected;
   }
 
   choose(evt) {
-    if(!this.complete) {
+    if(this.selected == null) {
       // find choice on outer element
       let elem = evt.target;
       let choice = elem.dataset.choice;
@@ -151,9 +166,7 @@ class QuizView extends LitElement {
         choice = elem.dataset.choice;
       }
       const index = parseInt(choice);
-      this.correct = this.answer === index;
-      this.selected[index] = this.correct ? "right" : "wrong";
-      this.complete = true;
+      this.selected = index;
       this.requestUpdate();
     }
   }

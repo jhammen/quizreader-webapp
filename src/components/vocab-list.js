@@ -72,7 +72,9 @@ class VocabView extends LitElement {
   }
 
   set count(count) {
-    this.refresh();
+    if(this.language) {
+      this.refresh();
+    }
   }
 
   refresh() {
