@@ -19,7 +19,7 @@ import './text-view.js';
 
 import {html, LitElement} from 'lit-element';
 
-import {WordService} from '../services/word-service.js';
+import {ServiceFactory} from '../services/service-factory.js';
 
 class VocabView extends LitElement {
 
@@ -66,13 +66,13 @@ class VocabView extends LitElement {
   set language(lang) {
     if(lang) {
       this._language = lang;
-      this.wordService = WordService.instance(lang);
-      this.refresh();
+      this.wordService = ServiceFactory.instance(lang).wordService();
+      this.words = [];
     }
   }
 
   set count(count) {
-    if(this.language) {
+    if(this.language && count != "undefined") {
       this.refresh();
     }
   }

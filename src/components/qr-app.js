@@ -24,6 +24,8 @@ import './qr-router.js';
 
 import {html, LitElement} from 'lit-element';
 
+import {ServiceFactory} from '../services/service-factory.js';
+
 function ife(field, def = "") {
   return field ? field : def
 }
@@ -74,11 +76,21 @@ class QrApp extends LitElement {
 
   route(dest) {
     const [, lang, command, work, chapter] = dest.split("/");
-    this.language = ife(lang);
+    if(lang && lang != this.language) { // load resources
+      const factory = ServiceFactory.instance(lang);
+      factory.init().then(() => { this.set(lang, command, work, chapter); },
+                          (e) => console.log("Error init ServiceFactory", e));
+    } else {
+      this.set(lang, command, work, chapter);
+      // console.log("routing", this.language, this.command, this.work, this.chapter);
+    }
+  }
+
+  set(lang, command, work, chapter) {
+    this.language = lang;
     this.command = ife(command, "home");
     this.work = ife(work);
     this.chapter = ife(chapter);
-    // console.log("routing", this.language, this.command, this.work, this.chapter);
   }
 
   render() {
@@ -146,8 +158,8 @@ class QrApp extends LitElement {
           </div>`;
   }
 
-  updateCount(count) {
-    this.wordcount[this.language] = ("0000" + count).substr(-4, 4);
+  updateCount(data) {
+    this.wordcount[data.language] = ("0000" + data.count).substr(-4, 4);
     this.requestUpdate();
   }
 

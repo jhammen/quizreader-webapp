@@ -19,7 +19,7 @@ import './more-button.js';
 
 import {html, LitElement} from 'lit-element';
 
-import {WordService} from '../services/word-service.js';
+import {ServiceFactory} from '../services/service-factory.js';
 
 class TextView extends LitElement {
 
@@ -61,7 +61,8 @@ class TextView extends LitElement {
   set language(value) {
     if(value) {
       this._language = value;
-      this.wordService = WordService.instance(value);
+      const factory = ServiceFactory.instance(value);
+      this.wordService = factory.wordService();
     }
   }
 

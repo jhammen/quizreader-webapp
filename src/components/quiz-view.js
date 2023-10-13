@@ -19,7 +19,7 @@ import './source-info.js';
 import {html, LitElement} from 'lit-element';
 
 import {DefinitionService} from '../services/definition-service.js';
-import {WordService} from '../services/word-service.js';
+import {ServiceFactory} from '../services/service-factory.js';
 
 const OPTIONS_COUNT = 3;
 
@@ -81,9 +81,11 @@ class QuizView extends LitElement {
 
   set language(value) {
     if(value) {
+      const factory = ServiceFactory.instance(value);
       this.definitionService = DefinitionService.instance(value);
-      this.wordService = WordService.instance(value);
+      this.wordService = factory.wordService();
     }
+    this._language = value;
   }
 
   get word() {
@@ -146,8 +148,8 @@ class QuizView extends LitElement {
 
   finished() {
     if(this.correct()) {
-      this.wordService.save(this.word).then((count) =>
-                                                window.dispatchEvent(new CustomEvent('word-count', {detail : count})));
+      this.wordService.save(this.word).then((count) => window.dispatchEvent(new CustomEvent(
+                                                'word-count', {detail : {language : this._language, count : count}})));
     }
     this.dispatchEvent(new CustomEvent('complete', {detail : this.correct()}));
   }

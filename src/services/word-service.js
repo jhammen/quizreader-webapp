@@ -15,35 +15,27 @@
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// module-scoped instance map
-let services = {};
+import {IDBStore} from './idb-store.js';
 
 /**
  * service to lookup and store known words
  */
 export class WordService {
 
-  constructor(language) {
+  constructor(language, db) {
     this.lang = language;
     this.words = {};
     this.quizwords = {};
+    this.store = db;
+  }
 
-    const openOrCreateDB = window.indexedDB.open('qrdb-' + language, 1);
-    // TODO: return promise, load on splash screen
-    openOrCreateDB.addEventListener('error', () => console.error('Error opening DB'));
-
-    openOrCreateDB.addEventListener('upgradeneeded', init => {
-      const db = init.target.result;
-      db.onerror = () => { console.error('Error loading database.'); };
-      const table = db.createObjectStore('words', {keyPath : [ 'word', 'type' ]});
-    });
-
-    openOrCreateDB.addEventListener('success', () => {
-      this.db = openOrCreateDB.result;
+  init() {
+    return new Promise((resolve, reject) => {
       // load words into cache
       let count = 0;
-      const store = this.db.transaction("words").objectStore("words");
-      store.openCursor().onsuccess = (event) => {
+      const tx = this.store.transaction([ "word" ], "readonly");
+      const table = tx.objectStore("word");
+      table.openCursor().onsuccess = (event) => {
         const cursor = event.target.result;
         if(cursor) {
           const word = cursor.value;
@@ -53,7 +45,8 @@ export class WordService {
           count++;
         } else {
           // end of entries
-          window.dispatchEvent(new CustomEvent('word-count', {detail : count}));
+          window.dispatchEvent(new CustomEvent('word-count', {detail : {language : this.lang, count : count}}));
+          resolve();
         }
       };
     });
@@ -82,16 +75,16 @@ export class WordService {
         resolve(0);
       } else {
         // open transaction
-        const tx = this.db.transaction([ "words" ], "readwrite");
+        const tx = this.store.transaction([ "word" ], "readwrite");
 
         // add request
-        const store = tx.objectStore("words");
-        const request = store.add(word);
+        const table = tx.objectStore("word");
+        const request = table.add(word);
         request.onerror = (event) => { reject("word service add request failed"); };
 
         // count request
         let count = 0;
-        const countrequest = store.count();
+        const countrequest = table.count();
         countrequest.onsuccess = (event) => { count = countrequest.result; };
         countrequest.onerror = (event) => { reject("word service count request failed"); };
 
@@ -107,21 +100,17 @@ export class WordService {
 
   getAll() {
     return new Promise(function(resolve, reject) {
-      if(!this.db) {
-        resolve([]);
-      } else {
-        const ret = [];
-        const store = this.db.transaction("words").objectStore("words");
-        store.openCursor().onsuccess = (event) => {
-          const cursor = event.target.result;
-          if(cursor) {
-            ret.push(cursor.value);
-            cursor.continue();
-          } else {
-            resolve(ret);
-          }
-        };
-      }
+      const ret = [];
+      const table = this.store.transaction("word", "readonly").objectStore("word");
+      table.openCursor().onsuccess = (event) => {
+        const cursor = event.target.result;
+        if(cursor) {
+          ret.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(ret);
+        }
+      };
     }.bind(this));
   }
 
@@ -141,12 +130,5 @@ export class WordService {
       this.words[type] = {};
     }
     return this.words[type];
-  }
-
-  static instance(language) {
-    if(!services[language]) {
-      services[language] = new WordService(language);
-    }
-    return services[language];
   }
 }
