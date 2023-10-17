@@ -37,36 +37,27 @@ class QrApp extends LitElement {
       // URL segment properties
       language : {type : String},
       command : {type : String},
-      work : {type : String},    // id of the current title
-      chapter : {type : String}, // id of current chapter
-      statpath : {type : String}
+      work : {type : String},   // id of the current title
+      chapter : {type : String} // id of current chapter
     };
   }
 
   constructor() {
     super();
-    this.views = {};
+    this.language = "";
+    this.work = "";
+    this.chapter = "";
+    this.wordcount = {};
     window.onpopstate = function() {
       this.route(location.hash.substring(1));
     }.bind(this);
     window.addEventListener('link', (e) => { this.redirect(e.detail); });
     window.addEventListener('word-count', (e) => { this.updateCount(e.detail); });
-    this.language = "";
-    this.work = "";
-    this.chapter = "";
-    this.wordcount = {};
   }
 
   firstUpdated(props) {
     super.firstUpdated(props);
     this.route(location.hash.substring(1));
-  }
-
-  findView(name) {
-    if(!this.views[name]) {
-      this.views[name] = document.createElement(name);
-    }
-    return this.views[name];
   }
 
   redirect(dest) {
@@ -87,7 +78,7 @@ class QrApp extends LitElement {
   }
 
   set(lang, command, work, chapter) {
-    this.language = lang;
+    this.language = ife(lang);
     this.command = ife(command, "home");
     this.work = ife(work);
     this.chapter = ife(chapter);
@@ -96,9 +87,7 @@ class QrApp extends LitElement {
   render() {
     return html`
             <style>
-            :host {
-              font-family: sans-serif;
-            }
+            :host { font-family: sans-serif; }
             .bubble {
               background-color: #ffffff;
               border-radius: 7px;
@@ -109,17 +98,17 @@ class QrApp extends LitElement {
             .navbar {
               font-weight: bold;
             }
-			.rightside {
-				float: right;
-			}           
+            .rightside {
+              float: right;
+            }           
             .outer {
               margin-left: auto;
               margin-right: auto;
               max-width: 700px;
-            }           
+            }
             #content {
-				min-height: 300px;
-			}
+              min-height: 300px;
+            }
             .statcounter { display: none; }
             </style>
             <div class="outer">
@@ -149,12 +138,10 @@ class QrApp extends LitElement {
                     @chapter-complete="${this.nextChapter}" @work-complete="${this.showTitles}"></read-view>
               </div>
               <div slot="vocab">
-                <vocab-view language="${this.language}" work="${this.work}" chapter="${this.chapter}" 
-                  count="${this.wordcount[this.language]}"></vocab-view>
+                <vocab-view language="${this.language}" count="${this.wordcount[this.language]}"></vocab-view>
               </div>
             </qr-router>
           </div>
-          <img class="statcounter" src="${this.statpath}">
           </div>`;
   }
 

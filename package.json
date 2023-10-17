@@ -1,24 +1,18 @@
 {
   "name": "quizreader-webapp",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
+  "description": "QuizReader Webapp",
   "license": "GPL-3.0+",
   "dependencies": {
-    "lit-element": "^2.2.1"
+    "lit-element": "2.5.1",
+    "lit-html": "1.4.1"
   },
   "devDependencies": {
-    "clean-webpack-plugin": "^2.0.2",
-    "copy-webpack-plugin": "^5.0.4",
-    "eslint": "^6.2.1",
-    "html-webpack-plugin": "^3.2.0",
-    "license-checker-webpack-plugin": "0.0.9",
-    "webpack": "^4.39.2",
-    "webpack-cli": "^3.3.7",
-    "webpack-dev-server": "^3.8.0"
+    "@web/dev-server": "^0.1.31"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "start:dev": "webpack-dev-server"
+    "serve": "wds --node-resolve --watch",
+    "serve:prod": "MODE=prod npm run serve"
   }
 }
