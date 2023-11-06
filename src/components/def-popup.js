@@ -14,25 +14,29 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { LitElement, html } from 'lit-element';
 import './source-info.js';
-import { DefinitionService } from '../services/definition-service.js';
+
+import {ContextConsumer} from '@lit/context';
+import {html, LitElement} from 'lit-element';
+
+import {servicectx} from '../service-context.js';
+import {DefinitionService} from '../services/definition-service.js';
 
 class DefPopup extends LitElement {
 
   static get properties() {
     return {
-      language: { type: String },
-      work: { type: String },
-      word: { type: Object },
-      defs: { type: Array },
-      roots: { type: Array },
-      visible: { type: Boolean }
+      language : {type : String},
+      work : {type : String},
+      word : {type : Object},
+      defs : {type : Array},
+      roots : {type : Array},
+      visible : {type : Boolean}
     };
   }
 
   render() {
-    return html `
+    return html`
       <style>
         #outer {
           background-color: #fafcd1;
@@ -58,46 +62,42 @@ class DefPopup extends LitElement {
       <div id="outer" @click="${() => this.visible = false}">
         <h2>${this.defs[0].w}</h2>
         <ul>
-        ${this.defs.map((def) =>
-          html`<li>${def.x}</li>`)}
+        ${this.defs.map((def) => html`<li>${def.x}</li>`)}
         </ul>
-        ${this.roots.length == 0 || this.roots[0].s !== this.defs[0].s ?
-          html`<source-info source="${this.defs[0].s}"></source-info><br/>` : ``}
-        ${this.roots.length ?
-          html`<h2>${this.roots[0].w}</h2>
+        ${
+        this.roots.length == 0 || this.roots[0].s !== this.defs[0].s ?
+            html`<source-info source="${this.defs[0].s}"></source-info><br/>` :
+            ``}
+        ${
+        this.roots.length ? html`<h2>${this.roots[0].w}</h2>
           <ul>
-          ${this.roots.map((def) =>
-            html`<li>${def.x}</li>`)}
+          ${this.roots.map((def) => html`<li>${def.x}</li>`)}
           </ul>
-          <source-info source="${this.roots[0].s}"></source-info>` : `` }
+          <source-info source="${this.roots[0].s}"></source-info>` :
+                            ``}
       </div>
     `;
   }
 
   constructor() {
     super();
-    this.defs = [{ s: "qr" }];
+    this.defs = [ {s : "qr"} ];
     this.roots = [];
-  }
-
-  set language(value) {
-    if (value) {
-      this.definitionService = DefinitionService.instance(value);
-    }
+    this.ctxconsumer = new ContextConsumer(this, {context : servicectx});
   }
 
   set word(value) {
-    if (value) {
-      this.definitionService.getDefinitions(value.word, value.type, this.work)
-        .then(function (defs) {
-          this.defs = defs.length ? defs : [{ s: "qr" }];
-        }.bind(this));
+    if(value) {
+      const defservice = this.ctxconsumer.value.defservice;
+      defservice.getDefinitions(this.language, value, this.work).then(function(defs) {
+        this.defs = defs.length ? defs : [ {s : "qr"} ];
+      }.bind(this));
       this.roots = [];
-      if (value.root) {
-        this.definitionService.getDefinitions(value.root, value.type, this.work)
-          .then(function (defs) {
-            this.roots = defs;
-          }.bind(this));
+      if(value.root) {
+        defservice.getDefinitions(this.language, {word : value.root, type : value.type}, this.work)
+            .then(function(defs) {
+              this.roots = defs;
+            }.bind(this));
       }
       this.visible = true;
     }

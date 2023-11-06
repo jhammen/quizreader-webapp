@@ -17,14 +17,15 @@
 import './def-popup.js';
 import './text-view.js';
 
+import {ContextConsumer} from '@lit/context';
 import {html, LitElement} from 'lit-element';
 
-import {ServiceFactory} from '../services/service-factory.js';
+import {servicectx} from '../service-context.js';
 
 class VocabView extends LitElement {
 
   static get properties() {
-    return {language : {type : String}, count : {type : String}, words : {type : Array}, defWord : {type : String}};
+    return {language : {type : String}, active : {type : Boolean}, words : {type : Array}, defWord : {type : String}};
   }
   render() {
     return html`
@@ -56,29 +57,23 @@ class VocabView extends LitElement {
   constructor() {
     super();
     this.words = [];
-    this.defWord = "null";
+    this.defWord = null;
+    this.ctxconsumer = new ContextConsumer(this, {context : servicectx});
   }
 
-  get language() {
-    return this._language;
+  get active() {
+    return this._active;
   }
-
-  set language(lang) {
-    if(lang) {
-      this._language = lang;
-      this.wordService = ServiceFactory.instance(lang).wordService();
-      this.words = [];
+  set active(active) {
+    if(active && this.language) {
+      setTimeout(this.refresh.bind(this), 0);
     }
-  }
-
-  set count(count) {
-    if(this.language && count != "undefined") {
-      this.refresh();
-    }
+    this._active = active;
   }
 
   refresh() {
-    this.wordService.getAll().then(function(result) {
+    const wordservice = this.ctxconsumer.value.wordservice;
+    wordservice.getAll(this.language).then(function(result) {
       this.words = result;
       this.words.sort(this.comparator);
     }.bind(this));

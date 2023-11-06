@@ -2,7 +2,6 @@
 node_modules/
 dist/
 # language sites
-sites.json
 es
 fr
 # eclips files

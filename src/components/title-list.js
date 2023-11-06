@@ -14,26 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { LitElement, html } from 'lit-element';
 import './app-link.js';
+
+import {html, LitElement} from 'lit-element';
 
 class TitleList extends LitElement {
 
   static get properties() {
-    return {
-      language: { type: String },
-      chapter: { type: String },
-      titles: Array
-    };
+    return {language : {type : String}, titles : Array};
   }
 
   render() {
-    return html `
+    return html`
       <div>
         <h2>Available Titles</h2>
         <ul>
-        ${this.titles.map(item =>
-          html`<li><app-link href="/${this.language}/read/${item.path}/${item.chapter}" text="${item.name}"></app-link></li>`)}
+        ${
+        this.titles.map(item => html`<li><app-link href="/${this.language}/read/${item.path}.${item.chapter}" text="${
+                            item.name}"></app-link></li>`)}
         </ul>
       </div>
     `;
@@ -45,33 +43,32 @@ class TitleList extends LitElement {
     this.titles = [];
   }
 
-  get language() { return this._lang; }
+  get language() {
+    return this._lang;
+  }
 
   set language(value) {
-    if (value) {
+    if(value) {
       const oldValue = this._lang;
       this._lang = value;
       fetch(value + '/txt/idx.json')
-        .then(function (response) { return response.json(); })
-        .then(function (json) {
-          const titles = [];
-          for (const path in json) {
-            titles.push({
-              path: path,
-              name: json[path],
-              chapter: this.bookmark(path)
-            });
-            this.titles = titles;
-          }
-        }.bind(this));
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(json) {
+            const titles = [];
+            for(const path in json) {
+              titles.push({path : path, name : json[path], chapter : this.bookmark(path)});
+              this.titles = titles;
+            }
+          }.bind(this));
       this.requestUpdate('language', oldValue);
     }
   }
 
-  set chapter(value) { this.refresh(); }
-
+  // TODO: unused
   refresh() {
-    for (const title of this.titles) {
+    for(const title of this.titles) {
       title.chapter = this.bookmark(title.path);
     }
     this.requestUpdate();
@@ -82,7 +79,6 @@ class TitleList extends LitElement {
     const data = localStorage.getItem("bkmk-" + path);
     return data ? data : 0;
   }
-
 }
 
 window.customElements.define('title-list', TitleList);

@@ -17,43 +17,72 @@
 
 import {IDBStore} from './idb-store.js';
 
+class WordCache {
+
+  words = {};
+  quizwords = {};
+  count = 0;
+
+  addQuizWord(word) {
+    const type = word.type
+    if(!this.quizwords[type]) {
+      this.quizwords[type] = [ word.word ];
+    }
+    else if(this.quizwords[type].indexOf(word.word) < 0) {
+      this.quizwords[type].push(word.word);
+    }
+    // console.log("ADD ", word, this.quizwords)
+  }
+  typeCache(type) { // private
+    if(!this.words.hasOwnProperty(type)) {
+      this.words[type] = {};
+    }
+    return this.words[type];
+  }
+}
+
 /**
  * service to lookup and store known words
  */
 export class WordService {
 
-  constructor(language, db) {
-    this.lang = language;
-    this.words = {};
-    this.quizwords = {};
+  constructor(db) {
     this.store = db;
+    this.cache = {};
   }
 
-  init() {
+  init(language) {
     return new Promise((resolve, reject) => {
-      // load words into cache
-      let count = 0;
-      const tx = this.store.transaction([ "word" ], "readonly");
-      const table = tx.objectStore("word");
-      table.openCursor().onsuccess = (event) => {
-        const cursor = event.target.result;
-        if(cursor) {
-          const word = cursor.value;
-          this.typeCache(word.type)[word.word] = true;
-          this.addQuizWord(word);
-          cursor.continue();
-          count++;
-        } else {
-          // end of entries
-          window.dispatchEvent(new CustomEvent('word-count', {detail : {language : this.lang, count : count}}));
-          resolve();
-        }
-      };
+      if(this.cache[language]) {
+        resolve(this.cache[language].count);
+      } else {
+        const cache = new WordCache();
+        // load words into cache
+        const storename = "word-" + language;
+        const tx = this.store.transaction([ storename ], "readonly");
+        const store = tx.objectStore(storename);
+        const request = store.openCursor();
+        request.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if(cursor) {
+            const word = cursor.value;
+            cache.typeCache(word.type)[word.word] = true;
+            cache.addQuizWord(word);
+            cursor.continue();
+            cache.count++;
+          } else {
+            // end of entries
+            this.cache[language] = cache;
+            resolve(cache.count);
+          }
+        };
+        request.onfailure = (e) => reject(e);
+      }
     });
   }
 
-  randomWord(type, excludes) {
-    const typed = this.quizwords[type];
+  randomWord(language, type, excludes) {
+    const typed = this.cache[language].quizwords[type];
     if(excludes.length >= typed.length) {
       return null;
     }
@@ -64,21 +93,23 @@ export class WordService {
     return {'word' : word, 'type' : type};
   }
 
-  isKnown(word) {
-    this.addQuizWord(word);
-    return word.word in this.typeCache(word.type);
+  isKnown(language, word) {
+    const cache = this.cache[language];
+    cache.addQuizWord(word);
+    return word.word in cache.typeCache(word.type);
   }
 
-  save(word) {
+  save(language, word) {
     return new Promise((resolve, reject) => {
-      if(this.isKnown(word)) {
+      if(this.isKnown(language, word)) {
         resolve(0);
       } else {
         // open transaction
-        const tx = this.store.transaction([ "word" ], "readwrite");
+        const storename = "word-" + language;
+        const tx = this.store.transaction([ storename ], "readwrite");
 
         // add request
-        const table = tx.objectStore("word");
+        const table = tx.objectStore(storename);
         const request = table.add(word);
         request.onerror = (event) => { reject("word service add request failed"); };
 
@@ -88,9 +119,10 @@ export class WordService {
         countrequest.onsuccess = (event) => { count = countrequest.result; };
         countrequest.onerror = (event) => { reject("word service count request failed"); };
 
+        const cache = this.cache[language];
         // resolve when tx complete
         tx.oncomplete = (event) => { // done
-          this.typeCache(word.type)[word.word] = true;
+          cache.typeCache(word.type)[word.word] = true;
           resolve(count)
         };
         tx.onerror = (event) => { reject("word service transaction failed"); };
@@ -98,10 +130,11 @@ export class WordService {
     });
   }
 
-  getAll() {
+  getAll(language) {
     return new Promise(function(resolve, reject) {
       const ret = [];
-      const table = this.store.transaction("word", "readonly").objectStore("word");
+      const storename = "word-" + language;
+      const table = this.store.transaction(storename, "readonly").objectStore(storename);
       table.openCursor().onsuccess = (event) => {
         const cursor = event.target.result;
         if(cursor) {
@@ -112,23 +145,5 @@ export class WordService {
         }
       };
     }.bind(this));
-  }
-
-  addQuizWord(word) { // private
-    const type = word.type
-    if(!this.quizwords[type]) {
-      this.quizwords[type] = [ word.word ];
-    }
-    else if(this.quizwords[type].indexOf(word.word) < 0) {
-      this.quizwords[type].push(word.word);
-    }
-    // console.log("ADD ", word, this.quizwords)
-  }
-
-  typeCache(type) { // private
-    if(!this.words.hasOwnProperty(type)) {
-      this.words[type] = {};
-    }
-    return this.words[type];
   }
 }

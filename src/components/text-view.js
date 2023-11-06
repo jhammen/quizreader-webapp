@@ -17,17 +17,17 @@
 import './def-popup.js';
 import './more-button.js';
 
+import {ContextConsumer} from '@lit/context';
 import {html, LitElement} from 'lit-element';
 
-import {ServiceFactory} from '../services/service-factory.js';
+import {servicectx} from '../service-context.js';
 
 class TextView extends LitElement {
 
   static get properties() {
     return {
       language : {type : String},
-      work : {type : String},
-      chapter : {type : String},
+      location : {type : String},
       paragraph : {type : Number},
       defWord : {type : String}
     };
@@ -52,46 +52,32 @@ class TextView extends LitElement {
     this.file = 0;
     this.paragraph = 0;
     this.defWord = "null";
+    this.ctxconsumer = new ContextConsumer(this, {context : servicectx});
   }
 
-  get language() {
-    return this._language;
+  get location() {
+    return this.work + "." + this.chapter;
   }
 
-  set language(value) {
+  set location(value) {
     if(value) {
-      this._language = value;
-      const factory = ServiceFactory.instance(value);
-      this.wordService = factory.wordService();
-    }
-  }
+      // parse location
+      let [work, chapter] = value.split(".");
+      this.work = work;
+      this.chapter = chapter ? Number(chapter) : 0;
 
-  get work() {
-    return this._work;
-  }
-
-  set work(value) {
-    if(value) {
-      this._work = value;
-      fetch(this.language + '/txt/' + value + '/toc.json')
+      // get TOC for work
+      fetch(this.language + '/txt/' + work + '/toc.json')
           .then(function(response) {
             return response.json();
           })
           .then(function(json) {
             this.filecount = json.length;
           }.bind(this));
-    }
-  }
 
-  get chapter() {
-    return this._chapter;
-  }
-
-  set chapter(value) {
-    if(value) {
-      this._chapter = value;
-      const file = ("000" + value).substr(-3, 3);
-      const path = this.language + "/txt/" + this.work + "/t" + file + ".html";
+      // get content file
+      const file = ("000" + this.chapter).substr(-3, 3);
+      const path = this.language + "/txt/" + work + "/t" + file + ".html";
       this.docInfo = [];
       fetch(path)
           .then(function(response) {
@@ -138,6 +124,7 @@ class TextView extends LitElement {
   }
 
   next() {
+    // console.log("next()", this.chapter, this.filecount);
     // no more paragraphs in this file
     if(this.paragraph == this.docInfo.length - 1) {
       // request next file if exists
@@ -145,8 +132,9 @@ class TextView extends LitElement {
         const nextFile = parseInt(this.chapter) + 1;
         // save bookmark position
         localStorage.setItem("bkmk-" + this.work, nextFile);
-        // notify chapter complete
-        this.dispatchEvent(new CustomEvent('chapter-complete', {bubbles : true, composed : true, detail : nextFile}));
+        // request next page
+        const href = `/${this.language}/read/${this.work}.${this.chapter + 1}`;
+        window.dispatchEvent(new CustomEvent('link', {detail : href}));
       }
       // no more files - finished with title
       else {
@@ -166,7 +154,8 @@ class TextView extends LitElement {
   }
 
   unknownWords(list) {
-    return list.filter(item => { return item.type != 'M' && !this.wordService.isKnown(item); });
+    const wordservice = this.ctxconsumer.value.wordservice;
+    return list.filter(item => { return item.type != 'M' && !wordservice.isKnown(this.language, item); });
   }
 
   showDef(evt) {

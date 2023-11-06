@@ -22,13 +22,7 @@ import {html, LitElement} from 'lit-element';
 class ReadView extends LitElement {
 
   static get properties() {
-    return {
-      language : {type : String},
-      work : {type : String},
-      chapter : {type : String},
-      mode : {type : String},
-      quizword : {type : Object}
-    };
+    return {language : {type : String}, location : {type : String}, mode : {type : String}, quizword : {type : Object}};
   }
 
   render() {
@@ -39,8 +33,7 @@ class ReadView extends LitElement {
         </quiz-view>
       </div>
       <div slot="read">
-        <text-view id="text" language="${this.language}" work="${this.work}" chapter="${this.chapter}" @new-words="${
-        this.startQuiz}">
+        <text-view id="text" language="${this.language}" location="${this.location}" @new-words="${this.startQuiz}">
         </text-view>
       </div>
     `;
@@ -51,13 +44,13 @@ class ReadView extends LitElement {
     this.init();
   }
 
-  get work() {
-    return this._work;
+  get location() {
+    return this._location;
   }
 
-  set work(value) {
-    this._work = value;
-    this.init();
+  set location(value) {
+    this.init(); // refresh view for a new location
+    this._location = value;
   }
 
   quizMode(b) {

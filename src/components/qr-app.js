@@ -22,13 +22,19 @@ import './title-toc.js';
 import './vocab-list.js';
 import './qr-router.js';
 
+import {ContextProvider} from '@lit/context';
 import {html, LitElement} from 'lit-element';
 
-import {ServiceFactory} from '../services/service-factory.js';
+import {servicectx} from '../service-context.js';
+import {DefinitionService} from '../services/definition-service.js';
+import {IDBStore} from '../services/idb-store.js';
+import {WordService} from '../services/word-service.js';
 
 function ife(field, def = "") {
   return field ? field : def
 }
+
+const EMPTY_STRING = '';
 
 class QrApp extends LitElement {
 
@@ -37,22 +43,23 @@ class QrApp extends LitElement {
       // URL segment properties
       language : {type : String},
       command : {type : String},
-      work : {type : String},   // id of the current title
-      chapter : {type : String} // id of current chapter
+      arg : {type : String} // url argument for subpage
     };
   }
 
   constructor() {
     super();
-    this.language = "";
-    this.work = "";
-    this.chapter = "";
+    this.language = EMPTY_STRING;
+    this.command = EMPTY_STRING;
+    this.arg = EMPTY_STRING;
     this.wordcount = {};
+    this.db = null;
     window.onpopstate = function() {
       this.route(location.hash.substring(1));
     }.bind(this);
     window.addEventListener('link', (e) => { this.redirect(e.detail); });
     window.addEventListener('word-count', (e) => { this.updateCount(e.detail); });
+    this.ctxprovider = new ContextProvider(this, servicectx);
   }
 
   firstUpdated(props) {
@@ -66,25 +73,49 @@ class QrApp extends LitElement {
   }
 
   route(dest) {
-    const [, lang, command, work, chapter] = dest.split("/");
-    if(lang && lang != this.language) { // load resources
-      const factory = ServiceFactory.instance(lang);
-      factory.init().then(() => { this.set(lang, command, work, chapter); },
-                          (e) => console.log("Error init ServiceFactory", e));
-    } else {
-      this.set(lang, command, work, chapter);
-      // console.log("routing", this.language, this.command, this.work, this.chapter);
+    if(this.db) {
+      this.checkdest(dest);
+    } else { // database not yet available
+      const store = new IDBStore();
+      // open database
+      store.init().then((db) => {
+        // then create services
+        this.db = db;
+        this.wordservice = new WordService(db);
+        this.ctxprovider.setValue({defservice : new DefinitionService(), wordservice : this.wordservice});
+        this.checkdest(dest);
+      }, (e) => console.log("Error opening IDBStore", e));
     }
   }
 
-  set(lang, command, work, chapter) {
+  checkdest(dest) {
+    const [, lang, command, arg] = dest.split("/", 4);
+    if(lang && lang != this.language) { // load resources
+      this.wordservice.init(lang).then((count) => {
+        this.updateCount({language : lang, count : count});
+        this.go(command, lang, arg);
+      }, (e) => console.log("Error initializing WordService", e));
+    } else {
+      this.go(command, lang, arg);
+    }
+  }
+
+  go(command, lang, arg) {
+    // console.log("CMD", command, lang, arg);
     this.language = ife(lang);
     this.command = ife(command, "home");
-    this.work = ife(work);
-    this.chapter = ife(chapter);
+    this.arg = ife(arg);
   }
 
   render() {
+    if(this.db) {
+      return this.main()
+    } else {
+      return html`<div>Loading</div>` // TODO: integrate into main template
+    }
+  }
+
+  main() {
     return html`
             <style>
             :host { font-family: sans-serif; }
@@ -115,7 +146,7 @@ class QrApp extends LitElement {
             <div class="bubble navbar">
               <app-link href='/' text='Home'></app-link>
               <app-link href='/${this.language}/titles' text='Titles' ?inactive="${!this.language}"></app-link>
-              <app-link href='/${this.language}/toc/${this.work}' text='Contents' ?inactive="${!this.work}"></app-link>
+              <app-link href='/${this.language}/toc/${this.arg}' text='Contents' ?inactive="${!this.arg}"></app-link>
               ${
         this.language ? html`<span class="rightside">&nbsp;
         <app-link href='/${this.language}/vocab/${this.work}' text='${this.wordcount[this.language]}'></app-link></span>
@@ -128,17 +159,17 @@ class QrApp extends LitElement {
                 <lang-list></lang-list>
               </div>
               <div slot="titles">
-                <title-list language="${this.language}" chapter="${this.chapter}"></title-list>
+                <title-list language="${this.language}"></title-list>
               </div>
               <div slot="toc">
-                <title-toc language="${this.language}" work="${this.work}"></title-toc>
+                <title-toc language="${this.language}" location="${this.arg}"></title-toc>
               </div>
               <div slot="read">
-                <read-view language="${this.language}" work="${this.work}" chapter="${this.chapter}"
-                    @chapter-complete="${this.nextChapter}" @work-complete="${this.showTitles}"></read-view>
+                <read-view language="${this.language}" location="${this.arg}"
+                     @work-complete="${this.showTitles}"></read-view>
               </div>
               <div slot="vocab">
-                <vocab-view language="${this.language}" count="${this.wordcount[this.language]}"></vocab-view>
+                <vocab-view language="${this.language}" ?active="${this.command === 'vocab'}"></vocab-view>
               </div>
             </qr-router>
           </div>
@@ -148,11 +179,6 @@ class QrApp extends LitElement {
   updateCount(data) {
     this.wordcount[data.language] = ("0000" + data.count).substr(-4, 4);
     this.requestUpdate();
-  }
-
-  nextChapter(evt) {
-    const next = evt.detail;
-    this.redirect("/" + this.language + "/read/" + this.work + "/" + next);
   }
 
   showTitles() {

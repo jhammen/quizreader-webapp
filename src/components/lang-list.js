@@ -18,11 +18,10 @@ import './app-link.js';
 
 import {html, LitElement} from 'lit-element';
 
+import {SiteInfo} from '../site-info.js'
+
 class LangList extends LitElement {
 
-  static get properties() {
-    return {languages : Array};
-  }
 
   render() {
     return html`
@@ -41,16 +40,7 @@ class LangList extends LitElement {
 
   constructor() {
     super();
-    this.languages = [];
-    fetch("/sites.json")
-        .then(function(response) {
-          return response.json();
-        })
-        .then(function(json) {
-          console.log(json);
-          this.languages = json;
-        }.bind(this));
+    this.languages = SiteInfo.languages;
   }
 }
-
 window.customElements.define('lang-list', LangList);

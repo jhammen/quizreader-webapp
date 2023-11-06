@@ -15,25 +15,26 @@
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {SiteInfo} from '../site-info.js'
+
 /**
  * indexedDB data store
  */
 export class IDBStore {
 
-  constructor(lang) {
-    this.language = lang;
-  }
-
   init() {
     return new Promise((resolve, reject) => {
-      const db = window.indexedDB.open('qrdb-' + this.language, 1);
+      const version = SiteInfo.version;
+      const db = window.indexedDB.open('quizreader', version);
       db.addEventListener('error', (e) => reject(e));
 
       db.addEventListener('upgradeneeded', init => {
         const db = init.target.result;
-        db.onerror = () => { console.error('Error loading database.'); };
-        //  word table
-        const wordstore = db.createObjectStore('word', {keyPath : [ 'word', 'type' ]});
+        db.onerror = (e) => { reject(e); };
+        //  word tables
+        for(const lang in SiteInfo.languages) {
+          const wordstore = db.createObjectStore('word-' + lang, {keyPath : [ 'word', 'type' ]});
+        }
         // chapter table
         const chapstore = db.createObjectStore('chapter', {keyPath : 'work'});
         chapstore.createIndex("chapter", "chapter", {unique : false});
