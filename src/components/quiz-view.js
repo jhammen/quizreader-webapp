@@ -16,10 +16,9 @@
  */
 import './source-info.js';
 
-import {ContextConsumer} from '@lit/context';
 import {html, LitElement} from 'lit-element';
 
-import {servicectx} from '../service-context.js';
+import {services} from '../services.js';
 import {DefinitionService} from '../services/definition-service.js';
 
 const OPTIONS_COUNT = 3;
@@ -73,7 +72,6 @@ class QuizView extends LitElement {
     this.choice = [];
     this._word = {};
     this.reset();
-    this.ctxconsumer = new ContextConsumer(this, {context : servicectx});
   }
 
   reset() {
@@ -93,9 +91,8 @@ class QuizView extends LitElement {
       const type = this._word.type;
       const chosen = [];
       chosen.push(this._word.word);
-      const wordservice = this.ctxconsumer.value.wordservice;
       for(var i = 1; i < OPTIONS_COUNT; i++) {
-        const rand = wordservice.randomWord(this.language, type, chosen);
+        const rand = services.wordservice.randomWord(this.language, type, chosen);
         if(rand) {
           chosen.push(rand.word);
         }
@@ -128,8 +125,7 @@ class QuizView extends LitElement {
   }
 
   addChoice(word, index) { // private
-    const defservice = this.ctxconsumer.value.defservice;
-    defservice.getDefinitions(this.language, word).then(function(defs) {
+    services.defservice.getDefinitions(this.language, word).then(function(defs) {
       if(defs.length) {
         this.choice[index] = defs.map(item => item.x).slice(0, 3);
         defs.map(item => this.sources[item.s] = true);
@@ -143,10 +139,9 @@ class QuizView extends LitElement {
 
   finished() {
     if(this.correct()) {
-      const wordservice = this.ctxconsumer.value.wordservice;
-      wordservice.save(this.language, this.word).then((count) => window.dispatchEvent(new CustomEvent('word-count', {
-        detail : {language : this.language, count : count}
-      })));
+      services.wordservice.save(this.language, this.word)
+          .then((count) => window.dispatchEvent(
+                    new CustomEvent('word-count', {detail : {language : this.language, count : count}})));
     }
     this.dispatchEvent(new CustomEvent('complete', {detail : this.correct()}));
   }

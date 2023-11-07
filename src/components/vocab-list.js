@@ -17,10 +17,9 @@
 import './def-popup.js';
 import './text-view.js';
 
-import {ContextConsumer} from '@lit/context';
 import {html, LitElement} from 'lit-element';
 
-import {servicectx} from '../service-context.js';
+import {services} from '../services.js';
 
 class VocabView extends LitElement {
 
@@ -58,7 +57,6 @@ class VocabView extends LitElement {
     super();
     this.words = [];
     this.defWord = null;
-    this.ctxconsumer = new ContextConsumer(this, {context : servicectx});
   }
 
   get active() {
@@ -66,14 +64,13 @@ class VocabView extends LitElement {
   }
   set active(active) {
     if(active && this.language) {
-      setTimeout(this.refresh.bind(this), 0);
+      this.refresh();
     }
     this._active = active;
   }
 
   refresh() {
-    const wordservice = this.ctxconsumer.value.wordservice;
-    wordservice.getAll(this.language).then(function(result) {
+    services.wordservice.getAll(this.language).then(function(result) {
       this.words = result;
       this.words.sort(this.comparator);
     }.bind(this));

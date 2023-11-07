@@ -17,10 +17,9 @@
 import './def-popup.js';
 import './more-button.js';
 
-import {ContextConsumer} from '@lit/context';
 import {html, LitElement} from 'lit-element';
 
-import {servicectx} from '../service-context.js';
+import {services} from '../services.js';
 
 class TextView extends LitElement {
 
@@ -52,7 +51,6 @@ class TextView extends LitElement {
     this.file = 0;
     this.paragraph = 0;
     this.defWord = "null";
-    this.ctxconsumer = new ContextConsumer(this, {context : servicectx});
   }
 
   get location() {
@@ -154,8 +152,7 @@ class TextView extends LitElement {
   }
 
   unknownWords(list) {
-    const wordservice = this.ctxconsumer.value.wordservice;
-    return list.filter(item => { return item.type != 'M' && !wordservice.isKnown(this.language, item); });
+    return list.filter(item => { return item.type != 'M' && !services.wordservice.isKnown(this.language, item); });
   }
 
   showDef(evt) {

@@ -22,10 +22,9 @@ import './title-toc.js';
 import './vocab-list.js';
 import './qr-router.js';
 
-import {ContextProvider} from '@lit/context';
 import {html, LitElement} from 'lit-element';
 
-import {servicectx} from '../service-context.js';
+import {services} from '../services.js';
 import {DefinitionService} from '../services/definition-service.js';
 import {IDBStore} from '../services/idb-store.js';
 import {WordService} from '../services/word-service.js';
@@ -59,7 +58,6 @@ class QrApp extends LitElement {
     }.bind(this);
     window.addEventListener('link', (e) => { this.redirect(e.detail); });
     window.addEventListener('word-count', (e) => { this.updateCount(e.detail); });
-    this.ctxprovider = new ContextProvider(this, servicectx);
   }
 
   firstUpdated(props) {
@@ -81,8 +79,8 @@ class QrApp extends LitElement {
       store.init().then((db) => {
         // then create services
         this.db = db;
-        this.wordservice = new WordService(db);
-        this.ctxprovider.setValue({defservice : new DefinitionService(), wordservice : this.wordservice});
+        services.wordservice = new WordService(db);
+        services.defservice = new DefinitionService();
         this.checkdest(dest);
       }, (e) => console.log("Error opening IDBStore", e));
     }
@@ -91,7 +89,7 @@ class QrApp extends LitElement {
   checkdest(dest) {
     const [, lang, command, arg] = dest.split("/", 4);
     if(lang && lang != this.language) { // load resources
-      this.wordservice.init(lang).then((count) => {
+      services.wordservice.init(lang).then((count) => {
         this.updateCount({language : lang, count : count});
         this.go(command, lang, arg);
       }, (e) => console.log("Error initializing WordService", e));

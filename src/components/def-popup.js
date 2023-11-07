@@ -16,10 +16,9 @@
  */
 import './source-info.js';
 
-import {ContextConsumer} from '@lit/context';
 import {html, LitElement} from 'lit-element';
 
-import {servicectx} from '../service-context.js';
+import {services} from '../services.js';
 import {DefinitionService} from '../services/definition-service.js';
 
 class DefPopup extends LitElement {
@@ -83,12 +82,11 @@ class DefPopup extends LitElement {
     super();
     this.defs = [ {s : "qr"} ];
     this.roots = [];
-    this.ctxconsumer = new ContextConsumer(this, {context : servicectx});
   }
 
   set word(value) {
     if(value) {
-      const defservice = this.ctxconsumer.value.defservice;
+      const defservice = services.defservice;
       defservice.getDefinitions(this.language, value, this.work).then(function(defs) {
         this.defs = defs.length ? defs : [ {s : "qr"} ];
       }.bind(this));
