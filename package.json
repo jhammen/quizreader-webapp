@@ -8,10 +8,15 @@
     "lit": "^3.0.2"
   },
   "devDependencies": {
-    "@web/dev-server": "^0.1.31"
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@web/dev-server": "^0.1.31",
+    "@web/rollup-plugin-html": "^2.1.0",
+    "rollup": "^2.79.1"
   },
   "scripts": {
     "serve": "wds --node-resolve --watch",
-    "serve:prod": "MODE=prod npm run serve"
+    "serve:prod": "MODE=prod npm run serve",
+    "build":  "rollup -c"
   }
 }
