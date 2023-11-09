@@ -67,6 +67,8 @@ class QrApp extends LitElement {
 
   redirect(dest) {
     history.pushState({}, "", "#" + dest);
+    const event = new CustomEvent("pagechange", {detail : dest});
+    window.dispatchEvent(event);
     this.route(dest);
   }
 
