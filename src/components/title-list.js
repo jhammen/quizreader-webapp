@@ -30,8 +30,9 @@ class TitleList extends LitElement {
         <h2>Available Titles</h2>
         <ul>
         ${
-        this.titles.map(item => html`<li><app-link href="/${this.language}/read/${item.path}.${item.chapter}" text="${
-                            item.name}"></app-link></li>`)}
+        this.titles.map(
+            item =>
+                html`<li><app-link href="/${this.language}/read/${item.path}" text="${item.name}"></app-link></li>`)}
         </ul>
       </div>
     `;

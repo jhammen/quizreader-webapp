@@ -62,53 +62,65 @@ class TextView extends LitElement {
       // parse location
       let [work, chapter] = value.split(".");
       this.work = work;
-      this.chapter = chapter ? Number(chapter) : 0;
-
-      // get TOC for work
-      fetch(this.language + '/txt/' + work + '/toc.json')
-          .then(function(response) {
-            return response.json();
-          })
-          .then(function(json) {
-            this.filecount = json.length;
-          }.bind(this));
-
-      // get content file
-      const file = ("000" + this.chapter).substr(-3, 3);
-      const path = this.language + "/txt/" + work + "/t" + file + ".html";
-      this.docInfo = [];
-      fetch(path)
-          .then(function(response) {
-            return response.text();
-          })
-          .then(function(html) {
-            const content = this.shadowRoot.getElementById("content");
-            content.innerHTML = html;
-            for(const para of content.children) {
-              let hash = {};
-              let linkList = para.querySelectorAll("a");
-              for(const link of linkList) {
-                // get base word + type
-                const base = this.baseWord(link);
-                const type = link.dataset.type;
-                // hash for docInfo
-                hash[base + ":" + type] = true;
-                // set event handler to show def
-                link.addEventListener('click', this.showDef.bind(this));
-                // title for rollover
-                link.title = base;
-              }
-              const keys = [];
-              for(const key in hash) {
-                let [word, type] = key.split(":");
-                keys.push({word : word, type : type});
-              }
-              this.docInfo.push(keys);
-            }
-            // TODO: lookup last paragraph read and show to there
-            this.paragraph = 0;
-          }.bind(this));
+      if(chapter) {
+        this.chapter = chapter;
+        this.load();
+      } else {
+        const bkmkservice = services.bkmkservice;
+        bkmkservice.chapter(work).then((chapter) => {
+          this.chapter = chapter;
+          this.load();
+        });
+      }
     }
+  }
+  
+
+  load() {
+    // get TOC for work
+    fetch(this.language + '/txt/' + this.work + '/toc.json')
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(json) {
+          this.filecount = json.length;
+        }.bind(this));
+
+    // get content file
+    const file = ("000" + this.chapter).substr(-3, 3);
+    const path = this.language + "/txt/" + this.work + "/t" + file + ".html";
+    this.docInfo = [];
+    fetch(path)
+        .then(function(response) {
+          return response.text();
+        })
+        .then(function(html) {
+          const content = this.shadowRoot.getElementById("content");
+          content.innerHTML = html;
+          for(const para of content.children) {
+            let hash = {};
+            let linkList = para.querySelectorAll("a");
+            for(const link of linkList) {
+              // get base word + type
+              const base = this.baseWord(link);
+              const type = link.dataset.type;
+              // hash for docInfo
+              hash[base + ":" + type] = true;
+              // set event handler to show def
+              link.addEventListener('click', this.showDef.bind(this));
+              // title for rollover
+              link.title = base;
+            }
+            const keys = [];
+            for(const key in hash) {
+              let [word, type] = key.split(":");
+              keys.push({word : word, type : type});
+            }
+            this.docInfo.push(keys);
+          }
+          // TODO: lookup last paragraph read and show to there
+          this.paragraph = 0;
+        }.bind(this));
   }
 
   baseWord(elem) {
@@ -127,18 +139,18 @@ class TextView extends LitElement {
     if(this.paragraph == this.docInfo.length - 1) {
       // request next file if exists
       if(this.chapter < this.filecount) {
-        const nextFile = parseInt(this.chapter) + 1;
+        const next = parseInt(this.chapter) + 1;
         // save bookmark position
-        localStorage.setItem("bkmk-" + this.work, nextFile);
+        services.bkmkservice.saveChapter(this.work, next);
         // request next page
-        const href = `/${this.language}/read/${this.work}.${this.chapter + 1}`;
+        const href = `/${this.language}/read/${this.work}.${next}`;
         window.dispatchEvent(new CustomEvent('link', {detail : href}));
       }
       // no more files - finished with title
       else {
         alert("fin");
         // remove bookmarker
-        localStorage.removeItem("bkmk-" + this.work);
+        services.bkmkservice.remove(this.work);
         // notify title complete
         this.dispatchEvent(new CustomEvent('work-complete', {bubbles : true, composed : true}));
       }

@@ -21,6 +21,8 @@ import {SiteInfo} from '../site-info.js'
  * indexedDB data store
  */
 export class IDBStore {
+	
+  static CHAPTER = "chapter";
 
   init() {
     return new Promise((resolve, reject) => {
@@ -36,7 +38,7 @@ export class IDBStore {
           const wordstore = db.createObjectStore('word-' + lang, {keyPath : [ 'word', 'type' ]});
         }
         // chapter table
-        const chapstore = db.createObjectStore('chapter', {keyPath : 'work'});
+        const chapstore = db.createObjectStore(IDBStore.CHAPTER, {keyPath : 'work'});
         chapstore.createIndex("chapter", "chapter", {unique : false});
       });
 

@@ -25,6 +25,7 @@ import './qr-router.js';
 import {html, LitElement} from 'lit-element';
 
 import {services} from '../services.js';
+import {BookmarkService} from '../services/bookmark-service.js';
 import {DefinitionService} from '../services/definition-service.js';
 import {IDBStore} from '../services/idb-store.js';
 import {WordService} from '../services/word-service.js';
@@ -81,9 +82,10 @@ class QrApp extends LitElement {
       store.init().then((db) => {
         // then create services
         this.db = db;
-        services.wordservice = new WordService(db);
+        services.bkmkservice = new BookmarkService(db);
         services.defservice = new DefinitionService();
-        this.checkdest(dest);
+        services.wordservice = new WordService(db);
+        services.bkmkservice.init().then(() => this.checkdest(dest));
       }, (e) => console.log("Error opening IDBStore", e));
     }
   }
