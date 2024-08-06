@@ -58,18 +58,24 @@ class TextView extends LitElement {
   }
 
   set location(value) {
+    const bservice = services.bkmkservice;
     if(value) {
       // parse location
       let [work, chapter] = value.split(".");
       this.work = work;
       if(chapter) {
         this.chapter = chapter;
-        this.load();
-      } else {
-        const bkmkservice = services.bkmkservice;
-        bkmkservice.chapter(work).then((chapter) => {
-          this.chapter = chapter;
+        bservice.paragraph(work, chapter).then((paragraph) => {
+          this.paragraph = paragraph;
           this.load();
+        });
+      } else {
+          bservice.chapter(work).then((chapter) => {
+          this.chapter = chapter;
+          bservice.paragraph(work, chapter).then((paragraph) => {
+            this.paragraph = paragraph;
+            this.load();
+          });
         });
       }
     }
@@ -97,6 +103,7 @@ class TextView extends LitElement {
         .then(function(html) {
           const content = this.shadowRoot.getElementById("content");
           content.innerHTML = html;
+          // for each paragraph in the content
           for(const para of content.children) {
             let hash = {};
             let linkList = para.querySelectorAll("a");
@@ -106,9 +113,9 @@ class TextView extends LitElement {
               const type = link.dataset.type;
               // hash for docInfo
               hash[base + ":" + type] = true;
-              // set event handler to show def
+              // set event handler to show definition
               link.addEventListener('click', this.showDef.bind(this));
-              // title for rollover
+              // set base word to appear on mouseover
               link.title = base;
             }
             const keys = [];
@@ -118,8 +125,6 @@ class TextView extends LitElement {
             }
             this.docInfo.push(keys);
           }
-          // TODO: lookup last paragraph read and show to there
-          this.paragraph = 0;
         }.bind(this));
   }
 
@@ -134,13 +139,12 @@ class TextView extends LitElement {
   }
 
   next() {
-    // console.log("next()", this.chapter, this.filecount);
     // no more paragraphs in this file
     if(this.paragraph == this.docInfo.length - 1) {
       // request next file if exists
       if(this.chapter < this.filecount) {
         const next = parseInt(this.chapter) + 1;
-        // save bookmark position
+        // save chapter bookmark
         services.bkmkservice.saveChapter(this.work, next);
         // request next page
         const href = `/${this.language}/read/${this.work}.${next}`;
@@ -157,6 +161,8 @@ class TextView extends LitElement {
     } else {
       // move to next paragraph, show quiz if unknown words
       let newWords = this.unknownWords(this.docInfo[this.paragraph++]);
+      // save paragraph bookmark
+      services.bkmkservice.saveParagraph(this.work, this.chapter, this.paragraph);
       if(newWords.length) {
         this.dispatchEvent(new CustomEvent('new-words', {detail : newWords}));
       }

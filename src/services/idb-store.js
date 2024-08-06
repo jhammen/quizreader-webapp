@@ -23,6 +23,7 @@ import {SiteInfo} from '../site-info.js'
 export class IDBStore {
 	
   static CHAPTER = "chapter";
+  static PARAGRAPH = "paragraph";
 
   init() {
     return new Promise((resolve, reject) => {
@@ -35,11 +36,13 @@ export class IDBStore {
         db.onerror = (e) => { reject(e); };
         //  word tables
         for(const lang in SiteInfo.languages) {
-          const wordstore = db.createObjectStore('word-' + lang, {keyPath : [ 'word', 'type' ]});
+          db.createObjectStore('word-' + lang, {keyPath : [ 'word', 'type' ]});
         }
-        // chapter table
+        // chapter + paragraph tables
         const chapstore = db.createObjectStore(IDBStore.CHAPTER, {keyPath : 'work'});
-        chapstore.createIndex("chapter", "chapter", {unique : false});
+        chapstore.createIndex(IDBStore.CHAPTER, IDBStore.CHAPTER, {unique : false});
+		const parastore = db.createObjectStore(IDBStore.PARAGRAPH, {keyPath : [ 'work', 'chapter' ]});
+		parastore.createIndex(IDBStore.PARAGRAPH, IDBStore.PARAGRAPH, {unique : false});
       });
 
       db.addEventListener('success', () => {
