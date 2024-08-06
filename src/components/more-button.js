@@ -20,20 +20,13 @@ class MoreButton extends LitElement {
 
   render() {
     return html `
-      <style>
-      button {
-        background-color: #5555FF;
-        border: none;
-        color: #FFFFFF;
-        padding: 12px 16px;
-        font-size: 16px;
-      }
-      button:hover {
-        background-color: #7777FF;
-        cursor: pointer;
-      }
-      </style>
-      <button>&gt;</button>
+        <style> 
+          img { cursor: pointer; }
+          img:active{
+             background-color: #EEEEEE;
+          }
+        </style>
+        <img src="img/caret-square-right.svg" width="50" height="50"/>
     `;
   }
 }
