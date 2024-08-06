@@ -137,12 +137,11 @@ class QrApp extends LitElement {
             .outer {
               margin-left: auto;
               margin-right: auto;
-              max-width: 700px;
+              max-width: 800px;
             }
             #content {
               min-height: 300px;
             }
-            .statcounter { display: none; }
             </style>
             <div class="outer">
             <div class="bubble navbar">
