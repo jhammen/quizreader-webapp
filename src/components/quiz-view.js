@@ -41,8 +41,8 @@ class QuizView extends LitElement {
         border-radius: 7px;
         cursor: pointer;
       }
-      .right { background-color: green; }
-      .wrong { background-color: red; }
+      .right { background-color: #c5ffc5; }
+      .wrong { background-color: #ffc5c5; }
       </style>
       <div>
         <h3>${this.word.word}</h3>
