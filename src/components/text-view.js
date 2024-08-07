@@ -37,6 +37,7 @@ class TextView extends LitElement {
       <style>
         #scroller { height: calc(100vh - 120px); overflow: auto; }
         #content > :nth-child(n +${this.paragraph + 2}) { display: none; }
+        img { max-width: 100%; }
       </style>
       <div id="scroller">
         <div id="content">
