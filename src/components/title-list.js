@@ -26,14 +26,54 @@ class TitleList extends LitElement {
 
   render() {
     return html`
+      <style>
+      #flow {
+        overflow: hidden;
+      }
+      .tile {
+        position: relative;
+        float: left;
+        width: 50%;
+        height: 300px;
+      }
+      .tilecontent{
+        border: 2px solid #888888;
+        border-radius: 15px;
+        height: 90%;
+        width: 90%; 
+        margin: 3%;
+        padding: 1.5%;
+      }
+      .linkdiv { 
+        height: 20%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center
+      }
+      .imgdiv {
+         height: 80%;
+         display: flex;
+         justify-content: center;
+      }
+      .cover {
+        max-height: 100%;
+        max-width: 100%;
+      }
+      @media only screen and (max-width: 600px) {
+        .tile { width: 100%; }
+      } 
+      </style>
       <div>
         <h2>Available Titles</h2>
-        <ul>
+        <div id="flow">
         ${
         this.titles.map(
             item =>
-                html`<li><app-link href="/${this.language}/read/${item.path}" text="${item.name}"></app-link></li>`)}
-        </ul>
+                html`<div class="tile"><div class="tilecontent">
+                    <div class="linkdiv"><app-link href="/${this.language}/read/${item.path}" text="${item.name}"></app-link></div>
+                    <div class="imgdiv"><img class="cover" src="/${this.language}/txt/${item.path}/img/cover.jpg"/></div></div></div>`)}
+        </div>
       </div>
     `;
   }
