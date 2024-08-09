@@ -17,6 +17,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import html from '@web/rollup-plugin-html';
+import copy from "rollup-plugin-copy";
 
 export default {
 
@@ -26,11 +27,12 @@ export default {
           input : './index.html',
         }),
         resolve(), // resolve bare module specifiers
-        terser({ecma : 2021, module : true, warnings : true})
-        //  copy({
-        //  copy static assets
-        //   patterns : [ 'img/**/*' ],
-        // }),
+        terser({ecma : 2021, module : true, warnings : true}),
+        copy({
+             targets: [
+               { src: 'img/**/*', dest: 'build/img' }
+             ]
+        })
       ],
 
   output: {dir: 'build'},
