@@ -12,6 +12,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@web/dev-server": "^0.4.6",
     "@web/rollup-plugin-html": "^2.1.0",
+    "prettier": "3.3.3",
     "rollup": "^2.79.1",
     "rollup-plugin-copy": "^3.5.0"
   },
