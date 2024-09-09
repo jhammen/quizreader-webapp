@@ -14,36 +14,35 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import './app-link.js';
-import './lang-list.js';
-import './read-view.js';
-import './title-list.js';
-import './title-toc.js';
-import './vocab-list.js';
-import './qr-router.js';
+import "./app-link.js";
+import "./lang-list.js";
+import "./read-view.js";
+import "./title-list.js";
+import "./title-toc.js";
+import "./vocab-list.js";
+import "./qr-router.js";
 
-import {html, LitElement} from 'lit-element';
+import { html, LitElement } from "lit-element";
 
-import {services} from '../services.js';
-import {BookmarkService} from '../services/bookmark-service.js';
-import {DefinitionService} from '../services/definition-service.js';
-import {IDBStore} from '../services/idb-store.js';
-import {WordService} from '../services/word-service.js';
+import { services } from "../services.js";
+import { BookmarkService } from "../services/bookmark-service.js";
+import { DefinitionService } from "../services/definition-service.js";
+import { IDBStore } from "../services/idb-store.js";
+import { WordService } from "../services/word-service.js";
 
 function ife(field, def = "") {
-  return field ? field : def
+  return field ? field : def;
 }
 
-const EMPTY_STRING = '';
+const EMPTY_STRING = "";
 
 class QrApp extends LitElement {
-
   static get properties() {
     return {
       // URL segment properties
-      language : {type : String},
-      command : {type : String},
-      arg : {type : String} // url argument for subpage
+      language: { type: String },
+      command: { type: String },
+      arg: { type: String }, // url argument for subpage
     };
   }
 
@@ -54,11 +53,15 @@ class QrApp extends LitElement {
     this.arg = EMPTY_STRING;
     this.wordcount = {};
     this.db = null;
-    window.onpopstate = function() {
+    window.onpopstate = function () {
       this.route(location.hash.substring(1));
     }.bind(this);
-    window.addEventListener('link', (e) => { this.redirect(e.detail); });
-    window.addEventListener('word-count', (e) => { this.updateCount(e.detail); });
+    window.addEventListener("link", (e) => {
+      this.redirect(e.detail);
+    });
+    window.addEventListener("word-count", (e) => {
+      this.updateCount(e.detail);
+    });
   }
 
   firstUpdated(props) {
@@ -68,35 +71,43 @@ class QrApp extends LitElement {
 
   redirect(dest) {
     history.pushState({}, "", "#" + dest);
-    const event = new CustomEvent("pagechange", {detail : dest});
+    const event = new CustomEvent("pagechange", { detail: dest });
     window.dispatchEvent(event);
     this.route(dest);
   }
 
   route(dest) {
-    if(this.db) {
+    if (this.db) {
       this.checkdest(dest);
-    } else { // database not yet available
+    } else {
+      // database not yet available
       const store = new IDBStore();
       // open database
-      store.init().then((db) => {
-        // then create services
-        this.db = db;
-        services.bkmkservice = new BookmarkService(db);
-        services.defservice = new DefinitionService();
-        services.wordservice = new WordService(db);
-        services.bkmkservice.init().then(() => this.checkdest(dest));
-      }, (e) => console.log("Error opening IDBStore", e));
+      store.init().then(
+        (db) => {
+          // then create services
+          this.db = db;
+          services.bkmkservice = new BookmarkService(db);
+          services.defservice = new DefinitionService();
+          services.wordservice = new WordService(db);
+          services.bkmkservice.init().then(() => this.checkdest(dest));
+        },
+        (e) => console.log("Error opening IDBStore", e),
+      );
     }
   }
 
   checkdest(dest) {
     const [, lang, command, arg] = dest.split("/", 4);
-    if(lang && lang != this.language) { // load resources
-      services.wordservice.init(lang).then((count) => {
-        this.updateCount({language : lang, count : count});
-        this.go(command, lang, arg);
-      }, (e) => console.log("Error initializing WordService", e));
+    if (lang && lang != this.language) {
+      // load resources
+      services.wordservice.init(lang).then(
+        (count) => {
+          this.updateCount({ language: lang, count: count });
+          this.go(command, lang, arg);
+        },
+        (e) => console.log("Error initializing WordService", e),
+      );
     } else {
       this.go(command, lang, arg);
     }
@@ -110,71 +121,100 @@ class QrApp extends LitElement {
   }
 
   render() {
-    if(this.db) {
-      return this.main()
+    if (this.db) {
+      return this.main();
     } else {
-      return html`<div>Loading</div>` // TODO: integrate into main template
+      return html`<div>Loading</div>`; // TODO: integrate into main template
     }
   }
 
   main() {
-    return html`
-            <style>
-            :host { font-family: sans-serif; }
-            .bubble {
-              background-color: #ffffff;
-              border-radius: 7px;
-              box-shadow: 10px 10px 5px -10px rgba(0,0,0,0.25);
-              margin: 10px;
-              padding: 17px;
-            }
-            .navbar {
-              font-weight: bold;
-            }
-            .rightside {
-              float: right;
-            }           
-            .outer {
-              margin-left: auto;
-              margin-right: auto;
-              max-width: 800px;
-            }
-            #content {
-              min-height: 300px;
-            }
-            </style>
-            <div class="outer">
-            <div class="bubble navbar">
-              <app-link href='/' text='Home'></app-link>
-              <app-link href='/${this.language}/titles' text='Titles' ?inactive="${!this.language}"></app-link>
-              <app-link href='/${this.language}/toc/${this.arg}' text='Contents' ?inactive="${!this.arg}"></app-link>
-              ${
-        this.language ? html`<span class="rightside">&nbsp;
-        <app-link href='/${this.language}/vocab/${this.work}' text='${this.wordcount[this.language]}'></app-link></span>
-              	<img height="20" width="30" class="rightside" visible="hidden" src="${this.language}/flag.png"/>` :
-                        ""}
+    return html` <style>
+        :host {
+          font-family: sans-serif;
+        }
+        .bubble {
+          background-color: #ffffff;
+          border-radius: 7px;
+          box-shadow: 10px 10px 5px -10px rgba(0, 0, 0, 0.25);
+          margin: 10px;
+          padding: 17px;
+        }
+        .navbar {
+          font-weight: bold;
+        }
+        .rightside {
+          float: right;
+        }
+        .outer {
+          margin-left: auto;
+          margin-right: auto;
+          max-width: 800px;
+        }
+        #content {
+          min-height: 300px;
+        }
+      </style>
+      <div class="outer">
+        <div class="bubble navbar">
+          <app-link href="/" text="Home"></app-link>
+          <app-link
+            href="/${this.language}/titles"
+            text="Titles"
+            ?inactive="${!this.language}"
+          ></app-link>
+          <app-link
+            href="/${this.language}/toc/${this.arg}"
+            text="Contents"
+            ?inactive="${!this.arg}"
+          ></app-link>
+          ${this.language
+            ? html`<span class="rightside"
+                  >&nbsp;
+                  <app-link
+                    href="/${this.language}/vocab/${this.work}"
+                    text="${this.wordcount[this.language]}"
+                  ></app-link
+                ></span>
+                <img
+                  height="20"
+                  width="30"
+                  class="rightside"
+                  visible="hidden"
+                  src="${this.language}/flag.png"
+                />`
+            : ""}
+        </div>
+        <div id="content" class="bubble">
+          <qr-router page="${this.command}">
+            <div slot="home">
+              <lang-list></lang-list>
             </div>
-            <div id="content" class="bubble">
-            <qr-router page="${this.command}">
-              <div slot="home">
-                <lang-list></lang-list>
-              </div>
-              <div slot="titles">
-                <title-list language="${this.language}"></title-list>
-              </div>
-              <div slot="toc">
-                <title-toc language="${this.language}" location="${this.arg}"></title-toc>
-              </div>
-              <div slot="read">
-                <read-view language="${this.language}" location="${this.arg}"
-                     @work-complete="${this.showTitles}"></read-view>
-              </div>
-              <div slot="vocab">
-                <vocab-view language="${this.language}" ?active="${this.command === 'vocab'}"></vocab-view>
-              </div>
-            </qr-router>
-          </div>
-          </div>`;
+            <div slot="titles">
+              <title-list language="${this.language}"></title-list>
+            </div>
+            <div slot="toc">
+              <title-toc
+                language="${this.language}"
+                location="${this.arg}"
+              ></title-toc>
+            </div>
+            <div slot="read">
+              <read-view
+                language="${this.language}"
+                location="${this.arg}"
+                @work-complete="${this.showTitles}"
+              ></read-view>
+            </div>
+            <div slot="vocab">
+              <vocab-view
+                language="${this.language}"
+                ?active="${this.command === "vocab"}"
+              ></vocab-view>
+            </div>
+          </qr-router>
+        </div>
+      </div>`;
   }
 
   updateCount(data) {
@@ -187,4 +227,4 @@ class QrApp extends LitElement {
   }
 }
 
-customElements.define('qr-app', QrApp);
+customElements.define("qr-app", QrApp);

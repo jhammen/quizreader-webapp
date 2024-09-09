@@ -17,8 +17,9 @@
     "rollup-plugin-copy": "^3.5.0"
   },
   "scripts": {
+    "build": "rollup -c",
+    "format": "prettier . --write",
     "serve": "wds --node-resolve --watch",
-    "serve:prod": "MODE=prod npm run serve",
-    "build": "rollup -c"
+    "serve:prod": "MODE=prod npm run serve"
   }
 }

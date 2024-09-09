@@ -14,19 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { LitElement, html } from 'lit-element';
+import { LitElement, html } from "lit-element";
 
 class QrRouter extends LitElement {
-
   static get properties() {
     return {
-      page: { type: String }
+      page: { type: String },
     };
   }
 
   render() {
-    return html `<slot name="${this.page}"></slot>`;
+    return html`<slot name="${this.page}"></slot>`;
   }
 }
 
-customElements.define('qr-router', QrRouter);
+customElements.define("qr-router", QrRouter);

@@ -14,14 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import './app-link.js';
+import "./app-link.js";
 
-import {html, LitElement} from 'lit-element';
+import { html, LitElement } from "lit-element";
 
 class TitleToc extends LitElement {
-
   static get properties() {
-    return {language : String, location : String, title : String, files : Array};
+    return { language: String, location: String, title: String, files: Array };
   }
 
   render() {
@@ -29,9 +28,15 @@ class TitleToc extends LitElement {
       <div>
         <h2>Contents</h2>
         <ul>
-        ${
-        this.files.map((val, i) => html`<li><app-link href="/${this.language}/read/${this.title}.${i + 1}" text="${
-                           val}"></app-link></li>`)}
+          ${this.files.map(
+            (val, i) =>
+              html`<li>
+                <app-link
+                  href="/${this.language}/read/${this.title}.${i + 1}"
+                  text="${val}"
+                ></app-link>
+              </li>`,
+          )}
         </ul>
       </div>
     `;
@@ -43,20 +48,22 @@ class TitleToc extends LitElement {
   }
 
   set location(value) {
-    if(value) {
-      const title = value.split('.')[0];
-      if(title != this.title) {
+    if (value) {
+      const title = value.split(".")[0];
+      if (title != this.title) {
         this.title = title;
-        fetch(this.language + '/txt/' + this.title + '/toc.json')
-            .then(function(response) {
-              return response.json();
-            })
-            .then(function(json) {
+        fetch(this.language + "/txt/" + this.title + "/toc.json")
+          .then(function (response) {
+            return response.json();
+          })
+          .then(
+            function (json) {
               this.files = json;
-            }.bind(this));
+            }.bind(this),
+          );
       }
     }
   }
 }
 
-window.customElements.define('title-toc', TitleToc);
+window.customElements.define("title-toc", TitleToc);

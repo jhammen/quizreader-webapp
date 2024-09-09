@@ -14,28 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import resolve from '@rollup/plugin-node-resolve';
-import terser from '@rollup/plugin-terser';
-import html from '@web/rollup-plugin-html';
+import resolve from "@rollup/plugin-node-resolve";
+import terser from "@rollup/plugin-terser";
+import html from "@web/rollup-plugin-html";
 import copy from "rollup-plugin-copy";
 
 export default {
+  plugins: [
+    html({
+      input: "./index.html",
+    }),
+    resolve(), // resolve bare module specifiers
+    terser({ ecma: 2021, module: true, warnings: true }),
+    copy({
+      targets: [{ src: "img/**/*", dest: "build/img" }],
+    }),
+  ],
 
-  plugins:
-      [
-        html({
-          input : './index.html',
-        }),
-        resolve(), // resolve bare module specifiers
-        terser({ecma : 2021, module : true, warnings : true}),
-        copy({
-             targets: [
-               { src: 'img/**/*', dest: 'build/img' }
-             ]
-        })
-      ],
+  output: { dir: "build" },
 
-  output: {dir: 'build'},
-
-  preserveEntrySignatures: 'strict'
+  preserveEntrySignatures: "strict",
 };

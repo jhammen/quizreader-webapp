@@ -14,32 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { LitElement, html } from 'lit-element';
+import { LitElement, html } from "lit-element";
 
 class SourceInfo extends LitElement {
-
   static get properties() {
     return {
       source: String,
       label: String,
-      info: Object
+      info: Object,
     };
   }
 
   render() {
-    return html `
-      <style>
-      .source {
-        font-size: 9pt;
-      }
-      .source a {
-        font-size: 7pt;
-        text-decoration: none;
-      }
+    return html` <style>
+        .source {
+          font-size: 9pt;
+        }
+        .source a {
+          font-size: 7pt;
+          text-decoration: none;
+        }
       </style>
-      ${this.info ?
-        html`<div class="source">${this.label}: <i>${this.info.name}</i>
-        <a href="${this.info.llink}">${this.info.license}</a></div>` : ``}`
+      ${this.info
+        ? html`<div class="source">
+            ${this.label}: <i>${this.info.name}</i>
+            <a href="${this.info.llink}">${this.info.license}</a>
+          </div>`
+        : ``}`;
   }
 
   constructor() {
@@ -51,13 +52,13 @@ class SourceInfo extends LitElement {
       qr: {
         name: "quizreader.org",
         license: "CC BY-NC-SA 4.0",
-        llink: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+        llink: "https://creativecommons.org/licenses/by-nc-sa/4.0/",
       },
       wikt: {
         name: "wiktionary.org",
         license: "CC BY-SA 3.0",
-        llink: "https://creativecommons.org/licenses/by-sa/3.0/"
-      }
+        llink: "https://creativecommons.org/licenses/by-sa/3.0/",
+      },
     };
   }
 
@@ -66,7 +67,6 @@ class SourceInfo extends LitElement {
       this.info = this.data[value];
     }
   }
-
 }
 
-window.customElements.define('source-info', SourceInfo);
+window.customElements.define("source-info", SourceInfo);

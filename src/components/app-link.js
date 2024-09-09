@@ -14,28 +14,35 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { LitElement, html } from 'lit-element';
+import { LitElement, html } from "lit-element";
 
 class AppLink extends LitElement {
-
   static get properties() {
     return {
       href: { type: String },
       text: { type: String },
-      inactive: { type: Boolean }
+      inactive: { type: Boolean },
     };
   }
 
   render() {
-    return this.inactive ?
-      html `<style>span {color: #BBBBBB;}</style><span>${this.text}</span>` :
-      html `<style>a {color: #5555FF; cursor: pointer;}</style><a @click="${this.click}">${this.text}</a>`;
+    return this.inactive
+      ? html`<style>
+            span {
+              color: #bbbbbb;
+            }</style
+          ><span>${this.text}</span>`
+      : html`<style>
+            a {
+              color: #5555ff;
+              cursor: pointer;
+            }</style
+          ><a @click="${this.click}">${this.text}</a>`;
   }
 
   click() {
-    window.dispatchEvent(new CustomEvent('link', { detail: this.href }));
+    window.dispatchEvent(new CustomEvent("link", { detail: this.href }));
   }
-
 }
 
-window.customElements.define('app-link', AppLink);
+window.customElements.define("app-link", AppLink);

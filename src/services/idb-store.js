@@ -15,37 +15,46 @@
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {SiteInfo} from '../site-info.js'
+import { SiteInfo } from "../site-info.js";
 
 /**
  * indexedDB data store
  */
 export class IDBStore {
-	
   static CHAPTER = "chapter";
   static PARAGRAPH = "paragraph";
 
   init() {
     return new Promise((resolve, reject) => {
       const version = SiteInfo.version;
-      const db = window.indexedDB.open('quizreader', version);
-      db.addEventListener('error', (e) => reject(e));
+      const db = window.indexedDB.open("quizreader", version);
+      db.addEventListener("error", (e) => reject(e));
 
-      db.addEventListener('upgradeneeded', init => {
+      db.addEventListener("upgradeneeded", (init) => {
         const db = init.target.result;
-        db.onerror = (e) => { reject(e); };
+        db.onerror = (e) => {
+          reject(e);
+        };
         //  word tables
-        for(const lang in SiteInfo.languages) {
-          db.createObjectStore('word-' + lang, {keyPath : [ 'word', 'type' ]});
+        for (const lang in SiteInfo.languages) {
+          db.createObjectStore("word-" + lang, { keyPath: ["word", "type"] });
         }
         // chapter + paragraph tables
-        const chapstore = db.createObjectStore(IDBStore.CHAPTER, {keyPath : 'work'});
-        chapstore.createIndex(IDBStore.CHAPTER, IDBStore.CHAPTER, {unique : false});
-		const parastore = db.createObjectStore(IDBStore.PARAGRAPH, {keyPath : [ 'work', 'chapter' ]});
-		parastore.createIndex(IDBStore.PARAGRAPH, IDBStore.PARAGRAPH, {unique : false});
+        const chapstore = db.createObjectStore(IDBStore.CHAPTER, {
+          keyPath: "work",
+        });
+        chapstore.createIndex(IDBStore.CHAPTER, IDBStore.CHAPTER, {
+          unique: false,
+        });
+        const parastore = db.createObjectStore(IDBStore.PARAGRAPH, {
+          keyPath: ["work", "chapter"],
+        });
+        parastore.createIndex(IDBStore.PARAGRAPH, IDBStore.PARAGRAPH, {
+          unique: false,
+        });
       });
 
-      db.addEventListener('success', () => {
+      db.addEventListener("success", () => {
         this.db = db.result;
         resolve(this.db);
       });

@@ -14,25 +14,34 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import './app-link.js';
+import "./app-link.js";
 
-import {html, LitElement} from 'lit-element';
+import { html, LitElement } from "lit-element";
 
-import {SiteInfo} from '../site-info.js'
+import { SiteInfo } from "../site-info.js";
 
 class LangList extends LitElement {
-
-
   render() {
     return html`
-      <style>a {color: #5555FF; cursor: pointer;}</style>
+      <style>
+        a {
+          color: #5555ff;
+          cursor: pointer;
+        }
+      </style>
       <div>
         <h2>Available Languages</h2>
         <ul>
-        ${
-        Object.keys(this.languages)
-            .map(i => html`<li><img height="20" width="30" src="${i}/flag.png"> <app-link href="/${i}/titles" text="${
-                     this.languages[i]}">`)}
+          ${Object.keys(this.languages).map(
+            (i) =>
+              html`<li>
+                <img height="20" width="30" src="${i}/flag.png" />
+                <app-link
+                  href="/${i}/titles"
+                  text="${this.languages[i]}"
+                ></app-link>
+              </li>`,
+          )}
         </ul>
       </div>
     `;
@@ -43,4 +52,4 @@ class LangList extends LitElement {
     this.languages = SiteInfo.languages;
   }
 }
-window.customElements.define('lang-list', LangList);
+window.customElements.define("lang-list", LangList);

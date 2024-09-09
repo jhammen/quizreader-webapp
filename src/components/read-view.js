@@ -14,28 +14,42 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import './text-view.js';
-import './quiz-view.js';
+import "./text-view.js";
+import "./quiz-view.js";
 
-import {html, LitElement} from 'lit-element';
+import { html, LitElement } from "lit-element";
 
 class ReadView extends LitElement {
-
   static get properties() {
-    return {language : {type : String}, location : {type : String}, mode : {type : String}, quizword : {type : Object}};
+    return {
+      language: { type: String },
+      location: { type: String },
+      mode: { type: String },
+      quizword: { type: Object },
+    };
   }
 
   render() {
     return html`
-    <qr-router page="${this.mode}">
-      <div slot="quiz">
-        <quiz-view language="${this.language}" word="${this.quizword}" @complete="${this.quizAnswer}">
-        </quiz-view>
-      </div>
-      <div slot="read">
-        <text-view id="text" language="${this.language}" location="${this.location}" @new-words="${this.startQuiz}">
-        </text-view>
-      </div>
+      <qr-router page="${this.mode}">
+        <div slot="quiz">
+          <quiz-view
+            language="${this.language}"
+            word="${this.quizword}"
+            @complete="${this.quizAnswer}"
+          >
+          </quiz-view>
+        </div>
+        <div slot="read">
+          <text-view
+            id="text"
+            language="${this.language}"
+            location="${this.location}"
+            @new-words="${this.startQuiz}"
+          >
+          </text-view>
+        </div>
+      </qr-router>
     `;
   }
 
@@ -62,10 +76,10 @@ class ReadView extends LitElement {
   }
 
   startQuiz(evt) {
-    if(evt.detail.length) {
+    if (evt.detail.length) {
       this.words = evt.detail;
       // shuffle
-      for(var i = this.words.length - 1; i > 0; i--) {
+      for (var i = this.words.length - 1; i > 0; i--) {
         var pick = Math.floor(Math.random() * (i + 1));
         var orig = this.words[i];
         this.words[i] = this.words[pick];
@@ -80,18 +94,19 @@ class ReadView extends LitElement {
 
   quizAnswer(evt) {
     const success = evt.detail;
-    if(this.words.length > 0) {
+    if (this.words.length > 0) {
       this.quizword = this.nextWord();
     } else {
       this.quizMode(false);
     }
   }
 
-  init() { // private
+  init() {
+    // private
     this.quizword = "";
     this.quizMode(false);
     this.words = [];
   }
 }
 
-window.customElements.define('read-view', ReadView);
+window.customElements.define("read-view", ReadView);

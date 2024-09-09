@@ -14,65 +14,79 @@
  * You should have received a copy of the GNU General Public License
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
-import './app-link.js';
+import "./app-link.js";
 
-import {html, LitElement} from 'lit-element';
+import { html, LitElement } from "lit-element";
 
 class TitleList extends LitElement {
-
   static get properties() {
-    return {language : {type : String}, titles : Array};
+    return { language: { type: String }, titles: Array };
   }
 
   render() {
     return html`
       <style>
-      #flow {
-        overflow: hidden;
-      }
-      .tile {
-        position: relative;
-        float: left;
-        width: 50%;
-        height: 300px;
-      }
-      .tilecontent{
-        border: 2px solid #888888;
-        border-radius: 15px;
-        height: 90%;
-        width: 90%; 
-        margin: 3%;
-        padding: 1.5%;
-      }
-      .linkdiv { 
-        height: 20%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center
-      }
-      .imgdiv {
-         height: 80%;
-         display: flex;
-         justify-content: center;
-      }
-      .cover {
-        max-height: 100%;
-        max-width: 100%;
-      }
-      @media only screen and (max-width: 600px) {
-        .tile { width: 100%; }
-      } 
+        #flow {
+          overflow: hidden;
+        }
+        .tile {
+          position: relative;
+          float: left;
+          width: 50%;
+          height: 300px;
+        }
+        .tilecontent {
+          border: 2px solid #888888;
+          border-radius: 15px;
+          height: 90%;
+          width: 90%;
+          margin: 3%;
+          padding: 1.5%;
+        }
+        .linkdiv {
+          height: 20%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+        }
+        .imgdiv {
+          height: 80%;
+          display: flex;
+          justify-content: center;
+        }
+        .cover {
+          max-height: 100%;
+          max-width: 100%;
+        }
+        @media only screen and (max-width: 600px) {
+          .tile {
+            width: 100%;
+          }
+        }
       </style>
       <div>
         <h2>Available Titles</h2>
         <div id="flow">
-        ${
-        this.titles.map(
-            item =>
-                html`<div class="tile"><div class="tilecontent">
-                    <div class="linkdiv"><app-link href="/${this.language}/read/${item.path}" text="${item.name}"></app-link></div>
-                    <div class="imgdiv"><img class="cover" src="/${this.language}/txt/${item.path}/img/cover.jpg"/></div></div></div>`)}
+          ${this.titles.map(
+            (item) =>
+              html`<div class="tile">
+                <div class="tilecontent">
+                  <div class="linkdiv">
+                    <app-link
+                      href="/${this.language}/read/${item.path}"
+                      text="${item.name}"
+                    ></app-link>
+                  </div>
+                  <div class="imgdiv">
+                    <img
+                      class="cover"
+                      src="/${this.language}/txt/${item.path}/img/cover.jpg"
+                    />
+                  </div>
+                </div>
+              </div>`,
+          )}
         </div>
       </div>
     `;
@@ -89,27 +103,33 @@ class TitleList extends LitElement {
   }
 
   set language(value) {
-    if(value) {
+    if (value) {
       const oldValue = this._lang;
       this._lang = value;
-      fetch(value + '/txt/idx.json')
-          .then(function(response) {
-            return response.json();
-          })
-          .then(function(json) {
+      fetch(value + "/txt/idx.json")
+        .then(function (response) {
+          return response.json();
+        })
+        .then(
+          function (json) {
             const titles = [];
-            for(const path in json) {
-              titles.push({path : path, name : json[path], chapter : this.bookmark(path)});
+            for (const path in json) {
+              titles.push({
+                path: path,
+                name: json[path],
+                chapter: this.bookmark(path),
+              });
               this.titles = titles;
             }
-          }.bind(this));
-      this.requestUpdate('language', oldValue);
+          }.bind(this),
+        );
+      this.requestUpdate("language", oldValue);
     }
   }
 
   // TODO: unused
   refresh() {
-    for(const title of this.titles) {
+    for (const title of this.titles) {
       title.chapter = this.bookmark(title.path);
     }
     this.requestUpdate();
@@ -122,4 +142,4 @@ class TitleList extends LitElement {
   }
 }
 
-window.customElements.define('title-list', TitleList);
+window.customElements.define("title-list", TitleList);
