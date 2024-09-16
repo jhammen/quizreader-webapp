@@ -55,14 +55,12 @@ export class WordService {
 
   // return a random quiz word of a given type
   randomWord(type, excludes) {
-    const typed = this.#quizwords[type];
-    if (excludes.length >= typed.length) {
+    const typeSet = this.#quizwords[type];
+    const options = typeSet.difference(new Set(excludes));
+    if (!options.size) {
       return null;
     }
-    let token = typed[Math.floor(Math.random() * typed.length)];
-    while (excludes.indexOf(token) >= 0) {
-      token = typed[Math.floor(Math.random() * typed.length)];
-    }
+    const token = Array(...options)[Math.floor(Math.random() * options.size)];
     return { word: token, type: type };
   }
 
@@ -99,10 +97,9 @@ export class WordService {
   #addQuizWord(word) {
     const type = word.type;
     if (!this.#quizwords[type]) {
-      this.#quizwords[type] = [word.word];
-    } else if (this.#quizwords[type].indexOf(word.word) < 0) {
-      this.#quizwords[type].push(word.word);
+      this.#quizwords[type] = new Set();
     }
+    this.#quizwords[type].add(word.word);
   }
 
   // get hash of known words by type
