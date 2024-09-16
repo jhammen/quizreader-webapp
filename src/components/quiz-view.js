@@ -19,7 +19,6 @@ import "./source-info.js";
 import { html, LitElement } from "lit-element";
 
 import { services } from "../services.js";
-import { DefinitionService } from "../services/definition-service.js";
 
 const OPTIONS_COUNT = 3;
 
@@ -105,11 +104,7 @@ class QuizView extends LitElement {
       const chosen = [];
       chosen.push(this._word.word);
       for (var i = 1; i < OPTIONS_COUNT; i++) {
-        const rand = services.wordservice.randomWord(
-          this.language,
-          type,
-          chosen,
-        );
+        const rand = services.wordservice.randomWord(type, chosen);
         if (rand) {
           chosen.push(rand.word);
         }
@@ -162,13 +157,13 @@ class QuizView extends LitElement {
 
   finished() {
     if (this.correct()) {
-      services.wordservice.save(this.language, this.word).then((count) =>
+      services.wordservice.saveWord(this.word).then((count) => {
         window.dispatchEvent(
           new CustomEvent("word-count", {
             detail: { language: this.language, count: count },
           }),
-        ),
-      );
+        );
+      });
     }
     this.dispatchEvent(new CustomEvent("complete", { detail: this.correct() }));
   }

@@ -15,146 +15,101 @@
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { IDBStore } from "./idb-store.js";
-
-class WordCache {
-  words = {};
-  quizwords = {};
-  count = 0;
-
-  addQuizWord(word) {
-    const type = word.type;
-    if (!this.quizwords[type]) {
-      this.quizwords[type] = [word.word];
-    } else if (this.quizwords[type].indexOf(word.word) < 0) {
-      this.quizwords[type].push(word.word);
-    }
-    // console.log("ADD ", word, this.quizwords)
-  }
-  typeCache(type) {
-    // private
-    if (!this.words.hasOwnProperty(type)) {
-      this.words[type] = {};
-    }
-    return this.words[type];
-  }
-}
+import { QRDatabase } from "./qr-database";
 
 /**
  * service to lookup and store known words
  */
 export class WordService {
+  #knownwords = {};
+  #quizwords = {};
+
   constructor(db) {
-    this.store = db;
-    this.cache = {};
+    this.db = db;
   }
 
-  init(language) {
+  init() {
     return new Promise((resolve, reject) => {
-      if (this.cache[language]) {
-        resolve(this.cache[language].count);
-      } else {
-        const cache = new WordCache();
-        // load words into cache
-        const storename = "word-" + language;
-        const tx = this.store.transaction([storename], "readonly");
-        const store = tx.objectStore(storename);
-        const request = store.openCursor();
-        request.onsuccess = (event) => {
-          const cursor = event.target.result;
-          if (cursor) {
-            const word = cursor.value;
-            cache.typeCache(word.type)[word.word] = true;
-            cache.addQuizWord(word);
-            cursor.continue();
-            cache.count++;
-          } else {
-            // end of entries
-            this.cache[language] = cache;
-            resolve(cache.count);
+      this.db.getAll(QRDatabase.STORE_WORD).then(
+        (allwords) => {
+          // loop over all known words from db
+          let count = 0;
+          for (const word in allwords) {
+            // add to local cache of known words
+            this.#addKnownWord(word);
+            // add to pool of quiz words
+            this.#addQuizWord(word);
+            count++;
           }
-        };
-        request.onfailure = (e) => reject(e);
-      }
+          resolve(count);
+        },
+        (evt) => reject(evt),
+      );
     });
   }
 
-  randomWord(language, type, excludes) {
-    const typed = this.cache[language].quizwords[type];
+  // return all known words from db
+  allWords() {
+    return this.db.getAll(QRDatabase.STORE_WORD);
+  }
+
+  // return a random quiz word of a given type
+  randomWord(type, excludes) {
+    const typed = this.#quizwords[type];
     if (excludes.length >= typed.length) {
       return null;
     }
-    let word = typed[Math.floor(Math.random() * typed.length)];
-    while (excludes.indexOf(word) >= 0) {
-      word = typed[Math.floor(Math.random() * typed.length)];
+    let token = typed[Math.floor(Math.random() * typed.length)];
+    while (excludes.indexOf(token) >= 0) {
+      token = typed[Math.floor(Math.random() * typed.length)];
     }
-    return { word: word, type: type };
+    return { word: token, type: type };
   }
 
-  isKnown(language, word) {
-    const cache = this.cache[language];
-    cache.addQuizWord(word);
-    return word.word in cache.typeCache(word.type);
+  // check if word is known
+  isKnown(word) {
+    this.#addQuizWord(word); // add to quiz pool either way
+    return word.word in this.#typeMap(word.type);
   }
 
-  save(language, word) {
+  // set a word as known and save in database
+  // returns count of all known words
+  saveWord(word) {
     return new Promise((resolve, reject) => {
-      if (this.isKnown(language, word)) {
+      if (this.isKnown(word)) {
         resolve(0);
       } else {
-        // open transaction
-        const storename = "word-" + language;
-        const tx = this.store.transaction([storename], "readwrite");
-
-        // add request
-        const table = tx.objectStore(storename);
-        const request = table.add(word);
-        request.onerror = (event) => {
-          reject("word service add request failed");
-        };
-
-        // count request
-        let count = 0;
-        const countrequest = table.count();
-        countrequest.onsuccess = (event) => {
-          count = countrequest.result;
-        };
-        countrequest.onerror = (event) => {
-          reject("word service count request failed");
-        };
-
-        const cache = this.cache[language];
-        // resolve when tx complete
-        tx.oncomplete = (event) => {
-          // done
-          cache.typeCache(word.type)[word.word] = true;
-          resolve(count);
-        };
-        tx.onerror = (event) => {
-          reject("word service transaction failed");
-        };
+        this.db.saveAndCount(QRDatabase.STORE_WORD, word).then(
+          (count) => {
+            this.#typeMap(word.type)[word.word] = true;
+            resolve(count);
+          },
+          (evt) => reject(evt),
+        );
       }
     });
   }
 
-  getAll(language) {
-    return new Promise(
-      function (resolve, reject) {
-        const ret = [];
-        const storename = "word-" + language;
-        const table = this.store
-          .transaction(storename, "readonly")
-          .objectStore(storename);
-        table.openCursor().onsuccess = (event) => {
-          const cursor = event.target.result;
-          if (cursor) {
-            ret.push(cursor.value);
-            cursor.continue();
-          } else {
-            resolve(ret);
-          }
-        };
-      }.bind(this),
-    );
+  // add a word as known
+  #addKnownWord(word) {
+    this.#typeMap(word.type)[word.word] = true;
+  }
+
+  // add a word to the pool for quizzes (may not be known)
+  #addQuizWord(word) {
+    const type = word.type;
+    if (!this.#quizwords[type]) {
+      this.#quizwords[type] = [word.word];
+    } else if (this.#quizwords[type].indexOf(word.word) < 0) {
+      this.#quizwords[type].push(word.word);
+    }
+  }
+
+  // get hash of known words by type
+  #typeMap(type) {
+    if (!this.#knownwords[type]) {
+      this.#knownwords[type] = {};
+    }
+    return this.#knownwords[type];
   }
 }

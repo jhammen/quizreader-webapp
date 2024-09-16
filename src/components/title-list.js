@@ -19,9 +19,7 @@ import "./app-link.js";
 import { html, LitElement } from "lit-element";
 
 class TitleList extends LitElement {
-  static get properties() {
-    return { language: { type: String }, titles: Array };
-  }
+  static properties = { language: { type: String } };
 
   render() {
     return html`
@@ -99,13 +97,11 @@ class TitleList extends LitElement {
   }
 
   get language() {
-    return this._lang;
+    return this._language;
   }
 
   set language(value) {
     if (value) {
-      const oldValue = this._lang;
-      this._lang = value;
       fetch(value + "/txt/idx.json")
         .then(function (response) {
           return response.json();
@@ -117,28 +113,15 @@ class TitleList extends LitElement {
               titles.push({
                 path: path,
                 name: json[path],
-                chapter: this.bookmark(path),
               });
-              this.titles = titles;
             }
+            this.titles = titles;
+            const oldValue = this._language;
+            this._language = value;
+            this.requestUpdate("language", oldValue);
           }.bind(this),
         );
-      this.requestUpdate("language", oldValue);
     }
-  }
-
-  // TODO: unused
-  refresh() {
-    for (const title of this.titles) {
-      title.chapter = this.bookmark(title.path);
-    }
-    this.requestUpdate();
-  }
-
-  bookmark(path) {
-    // look up existing bookmark
-    const data = localStorage.getItem("bkmk-" + path);
-    return data ? data : 0;
   }
 }
 

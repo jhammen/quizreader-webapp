@@ -108,7 +108,7 @@ class VocabView extends LitElement {
   }
 
   refresh() {
-    services.wordservice.getAll(this.language).then(
+    services.wordservice.allWords().then(
       function (result) {
         this.words = result;
         this.words.sort(this.comparator);

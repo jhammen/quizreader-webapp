@@ -73,8 +73,8 @@ class TextView extends LitElement {
       let [work, chapter] = value.split(".");
       this.work = work;
       if (chapter) {
-        this.chapter = chapter;
-        bservice.paragraph(work, chapter).then((paragraph) => {
+        this.chapter = parseInt(chapter);
+        bservice.paragraph(work, this.chapter).then((paragraph) => {
           this.paragraph = paragraph;
           this.load();
         });
@@ -103,7 +103,7 @@ class TextView extends LitElement {
       );
 
     // get content file
-    const file = ("000" + this.chapter).substr(-3, 3);
+    const file = String(this.chapter).padStart(3, "0");
     const path = this.language + "/txt/" + this.work + "/t" + file + ".html";
     this.docInfo = [];
     fetch(path)
@@ -155,7 +155,7 @@ class TextView extends LitElement {
     if (this.paragraph == this.docInfo.length - 1) {
       // request next file if exists
       if (this.chapter < this.filecount) {
-        const next = parseInt(this.chapter) + 1;
+        const next = this.chapter + 1;
         // save chapter bookmark
         services.bkmkservice.saveChapter(this.work, next);
         // request next page
@@ -189,9 +189,7 @@ class TextView extends LitElement {
 
   unknownWords(list) {
     return list.filter((item) => {
-      return (
-        item.type != "M" && !services.wordservice.isKnown(this.language, item)
-      );
+      return item.type != "M" && !services.wordservice.isKnown(item);
     });
   }
 

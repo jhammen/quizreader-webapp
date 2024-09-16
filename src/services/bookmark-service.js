@@ -15,7 +15,7 @@
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { IDBStore } from "./idb-store.js";
+import { QRDatabase } from "./qr-database";
 
 /**
  * service to lookup and store bookmark locations
@@ -26,112 +26,45 @@ export class BookmarkService {
     this.chapters = {}; // cache
   }
 
-  init() {
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(IDBStore.CHAPTER);
-      const store = tx.objectStore(IDBStore.CHAPTER);
-
-      store.openCursor().onsuccess = (event) => {
-        const cursor = event.target.result;
-        if (cursor) {
-          const chapter = cursor.value;
-          cursor.continue();
-        } else {
-          // end of entries
-          resolve();
-        }
-      };
-    });
-  }
-
   chapter(work) {
     return new Promise((resolve, reject) => {
       if (work in this.chapters) {
         resolve(this.chapters[work]);
       } else {
-        // seek from db
-        const transaction = this.db.transaction([IDBStore.CHAPTER]);
-        const objectStore = transaction.objectStore(IDBStore.CHAPTER);
-        const request = objectStore.get(work);
-        request.onerror = (e) => {
-          reject(e);
-        };
-        request.onsuccess = (e) => {
-          if (request.result) {
-            resolve(request.result.chapter);
-          } else {
-            resolve(0);
-          }
-        };
+        // get from db
+        this.db.get(QRDatabase.STORE_CHAPTER, work).then(
+          (result) => resolve(result ? result.chapter : 0),
+          (evt) => reject(evt),
+        );
       }
     });
   }
 
   paragraph(work, chapter) {
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([IDBStore.PARAGRAPH]);
-      const objectStore = transaction.objectStore(IDBStore.PARAGRAPH);
-      const request = objectStore.get([work, chapter]);
-      request.onerror = (e) => {
-        reject(e);
-      };
-      request.onsuccess = (e) => {
-        if (request.result) {
-          resolve(request.result.paragraph);
-        } else {
-          resolve(0);
-        }
-      };
+      this.db.get(QRDatabase.STORE_PARAGRAPH, [work, chapter]).then(
+        (result) => resolve(result ? result.paragraph : 0),
+        (evt) => reject(evt),
+      );
     });
   }
 
   saveChapter(work, chapter) {
     return new Promise((resolve, reject) => {
-      // open transaction
-      const tx = this.db.transaction([IDBStore.CHAPTER], "readwrite");
-
-      // add request
-      const table = tx.objectStore(IDBStore.CHAPTER);
-      const request = table.put({ work: work, chapter: chapter });
-      request.onerror = (event) => {
-        reject("bookmark service save chapter request failed");
-      };
-
-      // resolve when tx complete
-      tx.oncomplete = (event) => {
-        // save to cache
-        this.chapters[work] = chapter;
-        resolve();
-      };
-      tx.onerror = (event) => {
-        reject("word service transaction failed");
-      };
+      this.db
+        .save(QRDatabase.STORE_CHAPTER, { work: work, chapter: chapter })
+        .then(
+          () => (this.chapters[work] = chapter),
+          (evt) => reject(evt),
+        );
     });
   }
 
   saveParagraph(work, chapter, paragraph) {
-    return new Promise((resolve, reject) => {
-      // open transaction
-      const tx = this.db.transaction([IDBStore.PARAGRAPH], "readwrite");
-
-      // add request
-      const table = tx.objectStore(IDBStore.PARAGRAPH);
-      const request = table.put({
-        work: work,
-        chapter: chapter,
-        paragraph: paragraph,
-      });
-      request.onerror = (event) => {
-        reject("bookmark service save paragraph request failed");
-      };
-
-      // resolve when tx complete
-      tx.oncomplete = (event) => {
-        resolve();
-      };
-      tx.onerror = (event) => {
-        reject("word service transaction failed");
-      };
+    return this.db.save(QRDatabase.STORE_PARAGRAPH, {
+      work: work,
+      chapter: chapter,
+      paragraph: paragraph,
     });
   }
 

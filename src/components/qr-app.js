@@ -27,14 +27,14 @@ import { html, LitElement } from "lit-element";
 import { services } from "../services.js";
 import { BookmarkService } from "../services/bookmark-service.js";
 import { DefinitionService } from "../services/definition-service.js";
-import { IDBStore } from "../services/idb-store.js";
+import { QRDatabase } from "../services/qr-database.js";
 import { WordService } from "../services/word-service.js";
 
-function ife(field, def = "") {
+const EMPTY_STRING = "";
+
+function ife(field, def = EMPTY_STRING) {
   return field ? field : def;
 }
-
-const EMPTY_STRING = "";
 
 class QrApp extends LitElement {
   static get properties() {
@@ -52,7 +52,6 @@ class QrApp extends LitElement {
     this.command = EMPTY_STRING;
     this.arg = EMPTY_STRING;
     this.wordcount = {};
-    this.db = null;
     window.onpopstate = function () {
       this.route(location.hash.substring(1));
     }.bind(this);
@@ -77,36 +76,26 @@ class QrApp extends LitElement {
   }
 
   route(dest) {
-    if (this.db) {
-      this.checkdest(dest);
-    } else {
-      // database not yet available
-      const store = new IDBStore();
-      // open database
-      store.init().then(
-        (db) => {
-          // then create services
-          this.db = db;
-          services.bkmkservice = new BookmarkService(db);
-          services.defservice = new DefinitionService();
-          services.wordservice = new WordService(db);
-          services.bkmkservice.init().then(() => this.checkdest(dest));
+    const [, lang, command, arg] = dest.split("/", 4);
+    // is this a new language?
+    if (lang && lang != this.language) {
+      // open database for this language
+      const db = new QRDatabase(lang);
+      db.init().then(
+        (qrdb) => {
+          // create services
+          services.bkmkservice = new BookmarkService(qrdb);
+          services.defservice = new DefinitionService(qrdb);
+          services.wordservice = new WordService(qrdb);
+          services.wordservice.init().then(
+            (count) => {
+              this.updateCount({ language: lang, count: count });
+              this.go(command, lang, arg);
+            },
+            (e) => console.log("Error initializing WordService", e),
+          );
         },
         (e) => console.log("Error opening IDBStore", e),
-      );
-    }
-  }
-
-  checkdest(dest) {
-    const [, lang, command, arg] = dest.split("/", 4);
-    if (lang && lang != this.language) {
-      // load resources
-      services.wordservice.init(lang).then(
-        (count) => {
-          this.updateCount({ language: lang, count: count });
-          this.go(command, lang, arg);
-        },
-        (e) => console.log("Error initializing WordService", e),
       );
     } else {
       this.go(command, lang, arg);
@@ -121,14 +110,6 @@ class QrApp extends LitElement {
   }
 
   render() {
-    if (this.db) {
-      return this.main();
-    } else {
-      return html`<div>Loading</div>`; // TODO: integrate into main template
-    }
-  }
-
-  main() {
     return html` <style>
         :host {
           font-family: sans-serif;
