@@ -40,7 +40,7 @@ class LangList extends LitElement {
                   href="/${i}/titles"
                   text="${this.languages[i]}"
                 ></app-link>
-              </li>`,
+              </li>`
           )}
         </ul>
       </div>

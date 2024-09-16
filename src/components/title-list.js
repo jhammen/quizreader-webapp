@@ -83,7 +83,7 @@ class TitleList extends LitElement {
                     />
                   </div>
                 </div>
-              </div>`,
+              </div>`
           )}
         </div>
       </div>
@@ -112,14 +112,14 @@ class TitleList extends LitElement {
             for (const path in json) {
               titles.push({
                 path: path,
-                name: json[path],
+                name: json[path]
               });
             }
             this.titles = titles;
             const oldValue = this._language;
             this._language = value;
             this.requestUpdate("language", oldValue);
-          }.bind(this),
+          }.bind(this)
         );
     }
   }

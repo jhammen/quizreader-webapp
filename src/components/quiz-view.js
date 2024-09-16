@@ -26,7 +26,7 @@ class QuizView extends LitElement {
   static get properties() {
     return {
       language: String, // language code
-      word: Object, // current quiz word
+      word: Object // current quiz word
     };
   }
 
@@ -58,7 +58,7 @@ class QuizView extends LitElement {
               <ul>
                 ${val.map((txt) => html`<li>${txt}</li>`)}
               </ul>
-            </div>`,
+            </div>`
         )}
       </div>
       <br />
@@ -67,7 +67,7 @@ class QuizView extends LitElement {
           html`<source-info
             label="definition source"
             source="${val}"
-          ></source-info>`,
+          ></source-info>`
       )}
       <br />
       <more-button @click="${this.finished}"></more-button>
@@ -147,11 +147,11 @@ class QuizView extends LitElement {
           this.requestUpdate();
         } else {
           this.choice[index] = [
-            "[error: missing definition for '" + word.word + "']",
+            "[error: missing definition for '" + word.word + "']"
           ];
           this.requestUpdate();
         }
-      }.bind(this),
+      }.bind(this)
     );
   }
 
@@ -160,8 +160,8 @@ class QuizView extends LitElement {
       services.wordservice.saveWord(this.word).then((count) => {
         window.dispatchEvent(
           new CustomEvent("word-count", {
-            detail: { language: this.language, count: count },
-          }),
+            detail: { language: this.language, count: count }
+          })
         );
       });
     }

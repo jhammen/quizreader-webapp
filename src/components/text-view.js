@@ -27,7 +27,7 @@ class TextView extends LitElement {
       language: { type: String },
       location: { type: String },
       paragraph: { type: Number },
-      defWord: { type: String },
+      defWord: { type: String }
     };
   }
 
@@ -99,7 +99,7 @@ class TextView extends LitElement {
       .then(
         function (json) {
           this.filecount = json.length;
-        }.bind(this),
+        }.bind(this)
       );
 
     // get content file
@@ -136,7 +136,7 @@ class TextView extends LitElement {
             }
             this.docInfo.push(keys);
           }
-        }.bind(this),
+        }.bind(this)
       );
   }
 
@@ -169,7 +169,7 @@ class TextView extends LitElement {
         services.bkmkservice.remove(this.work);
         // notify title complete
         this.dispatchEvent(
-          new CustomEvent("work-complete", { bubbles: true, composed: true }),
+          new CustomEvent("work-complete", { bubbles: true, composed: true })
         );
       }
     } else {
@@ -179,7 +179,7 @@ class TextView extends LitElement {
       services.bkmkservice.saveParagraph(
         this.work,
         this.chapter,
-        this.paragraph,
+        this.paragraph
       );
       if (newWords.length) {
         this.dispatchEvent(new CustomEvent("new-words", { detail: newWords }));
@@ -199,7 +199,7 @@ class TextView extends LitElement {
     this.defWord = JSON.stringify({
       word: word ? word : elem.textContent,
       root: elem.dataset.base,
-      type: elem.dataset.type,
+      type: elem.dataset.type
     });
   }
 }

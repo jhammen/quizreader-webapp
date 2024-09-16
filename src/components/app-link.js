@@ -21,7 +21,7 @@ class AppLink extends LitElement {
     return {
       href: { type: String },
       text: { type: String },
-      inactive: { type: Boolean },
+      inactive: { type: Boolean }
     };
   }
 

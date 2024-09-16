@@ -19,7 +19,7 @@ import { LitElement, html } from "lit-element";
 class QrRouter extends LitElement {
   static get properties() {
     return {
-      page: { type: String },
+      page: { type: String }
     };
   }
 

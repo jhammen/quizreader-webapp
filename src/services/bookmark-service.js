@@ -34,7 +34,7 @@ export class BookmarkService {
         // get from db
         this.db.get(QRDatabase.STORE_CHAPTER, work).then(
           (result) => resolve(result ? result.chapter : 0),
-          (evt) => reject(evt),
+          (evt) => reject(evt)
         );
       }
     });
@@ -44,7 +44,7 @@ export class BookmarkService {
     return new Promise((resolve, reject) => {
       this.db.get(QRDatabase.STORE_PARAGRAPH, [work, chapter]).then(
         (result) => resolve(result ? result.paragraph : 0),
-        (evt) => reject(evt),
+        (evt) => reject(evt)
       );
     });
   }
@@ -55,7 +55,7 @@ export class BookmarkService {
         .save(QRDatabase.STORE_CHAPTER, { work: work, chapter: chapter })
         .then(
           () => (this.chapters[work] = chapter),
-          (evt) => reject(evt),
+          (evt) => reject(evt)
         );
     });
   }
@@ -64,7 +64,7 @@ export class BookmarkService {
     return this.db.save(QRDatabase.STORE_PARAGRAPH, {
       work: work,
       chapter: chapter,
-      paragraph: paragraph,
+      paragraph: paragraph
     });
   }
 

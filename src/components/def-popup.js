@@ -29,7 +29,7 @@ class DefPopup extends LitElement {
       word: { type: Object },
       defs: { type: Array },
       roots: { type: Array },
-      visible: { type: Boolean },
+      visible: { type: Boolean }
     };
   }
 
@@ -88,7 +88,7 @@ class DefPopup extends LitElement {
       defservice.getDefinitions(this.language, value, this.work).then(
         function (defs) {
           this.defs = defs.length ? defs : [{ s: "qr" }];
-        }.bind(this),
+        }.bind(this)
       );
       this.roots = [];
       if (value.root) {
@@ -96,12 +96,12 @@ class DefPopup extends LitElement {
           .getDefinitions(
             this.language,
             { word: value.root, type: value.type },
-            this.work,
+            this.work
           )
           .then(
             function (defs) {
               this.roots = defs;
-            }.bind(this),
+            }.bind(this)
           );
       }
       this.visible = true;

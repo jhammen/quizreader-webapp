@@ -55,7 +55,7 @@ export class DefinitionService {
         function (error) {
           console.log("definition load", error);
           return [];
-        },
+        }
       );
   }
 

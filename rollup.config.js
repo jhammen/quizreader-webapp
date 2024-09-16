@@ -22,16 +22,16 @@ import copy from "rollup-plugin-copy";
 export default {
   plugins: [
     html({
-      input: "./index.html",
+      input: "./index.html"
     }),
     resolve(), // resolve bare module specifiers
     terser({ ecma: 2021, module: true, warnings: true }),
     copy({
-      targets: [{ src: "img/**/*", dest: "build/img" }],
-    }),
+      targets: [{ src: "img/**/*", dest: "build/img" }]
+    })
   ],
 
   output: { dir: "build" },
 
-  preserveEntrySignatures: "strict",
+  preserveEntrySignatures: "strict"
 };

@@ -25,7 +25,7 @@ class ReadView extends LitElement {
       language: { type: String },
       location: { type: String },
       mode: { type: String },
-      quizword: { type: Object },
+      quizword: { type: Object }
     };
   }
 

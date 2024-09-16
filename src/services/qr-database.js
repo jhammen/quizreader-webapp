@@ -38,7 +38,7 @@ export class QRDatabase {
       // open database for the given language
       const request = window.indexedDB.open(
         "quizreader-" + this.language,
-        version,
+        version
       );
 
       // on upgradeneeded create stores
@@ -47,14 +47,14 @@ export class QRDatabase {
 
         // bookmark stores: chapter + paragraph
         db.createObjectStore(this.language + "-" + QRDatabase.STORE_CHAPTER, {
-          keyPath: "work",
+          keyPath: "work"
         });
         db.createObjectStore(this.language + "-" + QRDatabase.STORE_PARAGRAPH, {
-          keyPath: ["work", "chapter"],
+          keyPath: ["work", "chapter"]
         });
         //  word tables
         db.createObjectStore(this.language + "-" + QRDatabase.STORE_WORD, {
-          keyPath: ["word", "type"],
+          keyPath: ["word", "type"]
         });
 
         db.onerror = (e) => {

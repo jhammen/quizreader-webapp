@@ -43,7 +43,7 @@ export class WordService {
           }
           resolve(count);
         },
-        (evt) => reject(evt),
+        (evt) => reject(evt)
       );
     });
   }
@@ -82,7 +82,7 @@ export class WordService {
             this.#typeMap(word.type)[word.word] = true;
             resolve(count);
           },
-          (evt) => reject(evt),
+          (evt) => reject(evt)
         );
       }
     });

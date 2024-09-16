@@ -21,7 +21,7 @@ class SourceInfo extends LitElement {
     return {
       source: String,
       label: String,
-      info: Object,
+      info: Object
     };
   }
 
@@ -52,13 +52,13 @@ class SourceInfo extends LitElement {
       qr: {
         name: "quizreader.org",
         license: "CC BY-NC-SA 4.0",
-        llink: "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        llink: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
       },
       wikt: {
         name: "wiktionary.org",
         license: "CC BY-SA 3.0",
-        llink: "https://creativecommons.org/licenses/by-sa/3.0/",
-      },
+        llink: "https://creativecommons.org/licenses/by-sa/3.0/"
+      }
     };
   }
 

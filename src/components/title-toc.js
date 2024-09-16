@@ -35,7 +35,7 @@ class TitleToc extends LitElement {
                   href="/${this.language}/read/${this.title}.${i + 1}"
                   text="${val}"
                 ></app-link>
-              </li>`,
+              </li>`
           )}
         </ul>
       </div>
@@ -59,7 +59,7 @@ class TitleToc extends LitElement {
           .then(
             function (json) {
               this.files = json;
-            }.bind(this),
+            }.bind(this)
           );
       }
     }

@@ -42,7 +42,7 @@ class QrApp extends LitElement {
       // URL segment properties
       language: { type: String },
       command: { type: String },
-      arg: { type: String }, // url argument for subpage
+      arg: { type: String } // url argument for subpage
     };
   }
 
@@ -92,10 +92,10 @@ class QrApp extends LitElement {
               this.updateCount({ language: lang, count: count });
               this.go(command, lang, arg);
             },
-            (e) => console.log("Error initializing WordService", e),
+            (e) => console.log("Error initializing WordService", e)
           );
         },
-        (e) => console.log("Error opening IDBStore", e),
+        (e) => console.log("Error opening IDBStore", e)
       );
     } else {
       this.go(command, lang, arg);
