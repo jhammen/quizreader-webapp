@@ -38,13 +38,11 @@ class DefPopup extends LitElement {
       <style>
         #outer {
           background-color: #fafcd1;
-          border-radius: 7px;
+          border-radius: 15px;
           box-shadow: 3px 3px 1px -3px rgba(0, 0, 0, 0.15);
-          padding: 15px;
           width: 55%;
           max-width: 300px;
           max-height: 55%;
-          overflow: auto;
           position: absolute;
           right: 0;
           left: 0;
@@ -52,26 +50,52 @@ class DefPopup extends LitElement {
           margin-right: auto;
           margin-left: auto;
           visibility: ${this.visible ? "visible" : "hidden"};
+          display: flex;
+          flex-direction: column;
+        }
+        #header {
+          border-bottom: 1px solid #BBBBBB;
+          padding-right: 10px;
+        }
+        #content {
+          padding: 0px 15px 10px 15px;
+          overflow: auto;
+        }
+        #close-button {
+          font-weight: bold;
+          font-size: 175%;
+          cursor: pointer;
+          float: right;
         }
         h2 {
           margin-top: 5px;
         }
       </style>
-      <div id="outer" @click="${() => (this.visible = false)}">
-        <h2>${this.defs[0].w}</h2>
-        <ul>
-          ${this.defs.map((def) => html`<li>${def.x}</li>`)}
-        </ul>
-        ${this.roots.length == 0 || this.roots[0].s !== this.defs[0].s
-          ? html`<source-info source="${this.defs[0].s}"></source-info><br />`
-          : ``}
-        ${this.roots.length
-          ? html`<h2>${this.roots[0].w}</h2>
-              <ul>
-                ${this.roots.map((def) => html`<li>${def.x}</li>`)}
-              </ul>
-              <source-info source="${this.roots[0].s}"></source-info>`
-          : ``}
+      <div id="outer">
+        <div id="header">
+          <a
+            id="close-button"
+            title="Close"
+            @click="${() => (this.visible = false)}"
+            >&times;</a
+          >
+        </div>
+        <div id="content">
+          <h2>${this.defs[0].w}</h2>
+          <ul>
+            ${this.defs.map((def) => html`<li>${def.x}</li>`)}
+          </ul>
+          ${this.roots.length == 0 || this.roots[0].s !== this.defs[0].s
+            ? html`<source-info source="${this.defs[0].s}"></source-info><br />`
+            : ``}
+          ${this.roots.length
+            ? html`<h2>${this.roots[0].w}</h2>
+                <ul>
+                  ${this.roots.map((def) => html`<li>${def.x}</li>`)}
+                </ul>
+                <source-info source="${this.roots[0].s}"></source-info>`
+            : ``}
+        </div>
       </div>
     `;
   }
@@ -85,11 +109,11 @@ class DefPopup extends LitElement {
   set word(value) {
     if (value) {
       const defservice = services.defservice;
-      defservice.getDefinitions(this.language, value, this.work).then(
-        function (defs) {
+      defservice
+        .getDefinitions(this.language, value, this.work)
+        .then((defs) => {
           this.defs = defs.length ? defs : [{ s: "qr" }];
-        }.bind(this)
-      );
+        });
       this.roots = [];
       if (value.root) {
         defservice
@@ -98,11 +122,9 @@ class DefPopup extends LitElement {
             { word: value.root, type: value.type },
             this.work
           )
-          .then(
-            function (defs) {
-              this.roots = defs;
-            }.bind(this)
-          );
+          .then((defs) => {
+            this.roots = defs;
+          });
       }
       this.visible = true;
     }
