@@ -19,7 +19,6 @@ import "./source-info.js";
 import { html, LitElement } from "lit-element";
 
 import { services } from "../services.js";
-import { DefinitionService } from "../services/definition-service.js";
 
 class DefPopup extends LitElement {
   static get properties() {
@@ -33,28 +32,69 @@ class DefPopup extends LitElement {
     };
   }
 
+  constructor() {
+    super();
+    this.defs = [{ s: "qr" }];
+    this.roots = [];
+    // bind context so these methods can be referenced in removeEventListener
+    this.dragMove = this.dragMove.bind(this);
+    this.dragStop = this.dragStop.bind(this);
+  }
+
+  dragStart(e) {
+    const elem = e.target.parentElement;
+    // store information about current drag
+    this.drag = { elem: elem, x: e.clientX, y: e.clientY };
+    // add top limit to disallow dragging above the viewport
+    // not zero but half the current height due to the 50% transform
+    this.drag.ylimit = parseInt(window.getComputedStyle(elem).height) / 2;
+    // initialize left value to its current computed value
+    elem.style.left = window.getComputedStyle(elem).left;
+    // add event handlers
+    document.addEventListener("mousemove", this.dragMove);
+    document.addEventListener("mouseup", this.dragStop);
+  }
+
+  dragMove(e) {
+    // compute and set new top/left for outer div
+    const drag = this.drag;
+    const newx = drag.elem.offsetLeft - drag.x + e.clientX;
+    const newy = Math.max(
+      drag.elem.offsetTop - drag.y + e.clientY,
+      drag.ylimit
+    );
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+    drag.elem.style.left = newx + "px";
+    drag.elem.style.top = newy + "px";
+  }
+
+  dragStop(e) {
+    // remove drag-related mouse events
+    document.removeEventListener("mousemove", this.dragMove);
+    document.removeEventListener("mouseup", this.dragStop);
+  }
+
   render() {
     return html`
       <style>
         #outer {
-          background-color: #fafcd1;
-          border-radius: 15px;
-          box-shadow: 3px 3px 1px -3px rgba(0, 0, 0, 0.15);
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
           width: 55%;
           max-width: 300px;
           max-height: 55%;
-          position: absolute;
-          right: 0;
-          left: 0;
-          top: 35%;
-          margin-right: auto;
-          margin-left: auto;
+          background-color: #fafcd1;
+          border-radius: 15px;
+          box-shadow: 3px 3px 1px -3px rgba(0, 0, 0, 0.15);
           visibility: ${this.visible ? "visible" : "hidden"};
           display: flex;
           flex-direction: column;
         }
         #header {
-          border-bottom: 1px solid #BBBBBB;
+          border-bottom: 1px solid #bbbbbb;
           padding-right: 10px;
         }
         #content {
@@ -72,7 +112,7 @@ class DefPopup extends LitElement {
         }
       </style>
       <div id="outer">
-        <div id="header">
+        <div id="header" @mousedown="${this.dragStart}">
           <a
             id="close-button"
             title="Close"
@@ -86,7 +126,7 @@ class DefPopup extends LitElement {
             ${this.defs.map((def) => html`<li>${def.x}</li>`)}
           </ul>
           ${this.roots.length == 0 || this.roots[0].s !== this.defs[0].s
-            ? html`<source-info source="${this.defs[0].s}"></source-info><br />`
+            ? html`<source-info source="${this.defs[0].s}"></source-info>`
             : ``}
           ${this.roots.length
             ? html`<h2>${this.roots[0].w}</h2>
@@ -98,12 +138,6 @@ class DefPopup extends LitElement {
         </div>
       </div>
     `;
-  }
-
-  constructor() {
-    super();
-    this.defs = [{ s: "qr" }];
-    this.roots = [];
   }
 
   set word(value) {
