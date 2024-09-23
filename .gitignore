@@ -6,8 +6,6 @@ build/
 # language sites
 es
 fr
-# eclips files
+# eclipse files
 .project
 .settings
-# tbd
-favicon.ico
