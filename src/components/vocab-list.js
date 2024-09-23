@@ -94,7 +94,7 @@ class VocabView extends LitElement {
   constructor() {
     super();
     this.words = [];
-    this.defWord = null;
+    this.defWord = "";
   }
 
   get active() {

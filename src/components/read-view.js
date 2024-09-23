@@ -56,6 +56,8 @@ class ReadView extends LitElement {
   constructor() {
     super();
     this.init();
+    this.mode = "read";
+    this.quizword = "";
   }
 
   get location() {
