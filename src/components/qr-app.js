@@ -31,7 +31,6 @@ import { QRDatabase } from "../services/qr-database.js";
 import { WordService } from "../services/word-service.js";
 
 const EMPTY_STRING = "";
-
 function ife(field, def = EMPTY_STRING) {
   return field ? field : def;
 }
@@ -40,9 +39,9 @@ class QrApp extends LitElement {
   static get properties() {
     return {
       // URL segment properties
-      language: { type: String },
-      command: { type: String },
-      arg: { type: String } // url argument for subpage
+      language: { type: String }, // current language
+      command: { type: String }, // command = page to show
+      arg: { type: String } // url argument for command
     };
   }
 
@@ -51,13 +50,17 @@ class QrApp extends LitElement {
     this.language = EMPTY_STRING;
     this.command = EMPTY_STRING;
     this.arg = EMPTY_STRING;
+    // hash word counts by language
     this.wordcount = {};
-    window.onpopstate = function () {
+    // pop state = routing for back button
+    window.onpopstate = () => {
       this.route(location.hash.substring(1));
-    }.bind(this);
+    };
+    // custom event for  app links
     window.addEventListener("link", (e) => {
       this.redirect(e.detail);
     });
+    // custom event to update word count display
     window.addEventListener("word-count", (e) => {
       this.updateCount(e.detail);
     });
@@ -69,13 +72,17 @@ class QrApp extends LitElement {
   }
 
   redirect(dest) {
+    // push new state to history
     history.pushState({}, "", "#" + dest);
+    // fire custom event for site statistics
     const event = new CustomEvent("pagechange", { detail: dest });
     window.dispatchEvent(event);
+    // route to new destination
     this.route(dest);
   }
 
   route(dest) {
+    // parse destination url into component parts
     const [, lang, command, arg] = dest.split("/", 4);
     // is this a new language?
     if (lang && lang != this.language) {
@@ -83,12 +90,13 @@ class QrApp extends LitElement {
       const db = new QRDatabase(lang);
       db.init().then(
         (qrdb) => {
-          // create services
+          // create services for this language
           services.bkmkservice = new BookmarkService(qrdb);
           services.defservice = new DefinitionService(qrdb);
           services.wordservice = new WordService(qrdb);
           services.wordservice.init().then(
             (count) => {
+              // show the word count for this language
               this.updateCount({ language: lang, count: count });
               this.go(command, lang, arg);
             },
@@ -102,6 +110,7 @@ class QrApp extends LitElement {
     }
   }
 
+  // update active properties to show a new page
   go(command, lang, arg) {
     // console.log("CMD", command, lang, arg);
     this.language = ife(lang);
@@ -198,11 +207,13 @@ class QrApp extends LitElement {
       </div>`;
   }
 
+  // update the total word count display
   updateCount(data) {
-    this.wordcount[data.language] = ("0000" + data.count).substr(-4, 4);
+    this.wordcount[data.language] = String(data.count).padStart(4, "0");
     this.requestUpdate();
   }
 
+  // show titles page after finished reading a title
   showTitles() {
     this.redirect(`/${this.language}/titles`);
   }
