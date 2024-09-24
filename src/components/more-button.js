@@ -20,6 +20,11 @@ class MoreButton extends LitElement {
   render() {
     return html`
       <style>
+        #outer {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+        }
         img {
           cursor: pointer;
         }
@@ -27,7 +32,9 @@ class MoreButton extends LitElement {
           background-color: #eeeeee;
         }
       </style>
-      <img src="img/caret-square-right.svg" width="50" height="50" />
+      <div id="outer">
+        <img src="img/caret-square-right.svg" width="50" height="50" />
+      </div>
     `;
   }
 }
