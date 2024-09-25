@@ -189,7 +189,11 @@ class TextView extends LitElement {
 
   unknownWords(list) {
     return list.filter((item) => {
-      return item.type != "M" && !services.wordservice.isKnown(item);
+      return (
+        item.type != "M" &&
+        item.type != "I" &&
+        !services.wordservice.isKnown(item)
+      );
     });
   }
 
