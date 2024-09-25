@@ -28,7 +28,7 @@ export class WordService {
     this.db = db;
   }
 
-  init() {
+  init(language) {
     return new Promise((resolve, reject) => {
       this.db.getAll(QRDatabase.STORE_WORD).then(
         (allwords) => {
@@ -41,7 +41,18 @@ export class WordService {
             this.#addQuizWord(word);
             count++;
           }
-          resolve(count);
+          // add seed words as quiz words
+          fetch(language + "/def/seed.json")
+            .then((response) => response.json())
+            .then(
+              (json) => {
+                json.forEach((seed) => {
+                  this.#addQuizWord({ word: seed.w, type: seed.t });
+                });
+                resolve(count);
+              },
+              () => resolve(count) // error loading seeds: resolve promise anyway
+            );
         },
         (evt) => reject(evt)
       );
@@ -58,6 +69,7 @@ export class WordService {
     const typeSet = this.#quizwords[type];
     const options = typeSet.difference(new Set(excludes));
     if (!options.size) {
+      // should not happen if seed words loaded correctly
       return null;
     }
     const token = Array(...options)[Math.floor(Math.random() * options.size)];

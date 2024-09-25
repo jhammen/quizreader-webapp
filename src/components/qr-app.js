@@ -94,7 +94,7 @@ class QrApp extends LitElement {
           services.bkmkservice = new BookmarkService(qrdb);
           services.defservice = new DefinitionService(qrdb);
           services.wordservice = new WordService(qrdb);
-          services.wordservice.init().then(
+          services.wordservice.init(lang).then(
             (count) => {
               // show the word count for this language
               this.updateCount({ language: lang, count: count });
