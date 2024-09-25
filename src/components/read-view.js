@@ -79,14 +79,19 @@ class ReadView extends LitElement {
 
   startQuiz(evt) {
     if (evt.detail.length) {
-      this.words = evt.detail;
+      // event contains unknown words
+      const words = evt.detail;
       // shuffle
-      for (var i = this.words.length - 1; i > 0; i--) {
+      for (var i = words.length - 1; i > 0; i--) {
         var pick = Math.floor(Math.random() * (i + 1));
-        var orig = this.words[i];
-        this.words[i] = this.words[pick];
-        this.words[pick] = orig;
+        var orig = words[i];
+        words[i] = words[pick];
+        words[pick] = orig;
       }
+      // truncate to max words
+      const MAX_PER_QUIZ = 3;
+      const max = Math.min(MAX_PER_QUIZ, words.length);
+      this.words = words.slice(0, max);
       this.quizword = this.nextWord();
       this.quizMode(true);
     } else {
