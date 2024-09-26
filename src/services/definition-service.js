@@ -15,15 +15,20 @@
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+const SOURCE_WIKTIONARY = "wikt";
+
 /**
  * service to look up definitions
  */
 export class DefinitionService {
   constructor() {
     // sources sorted by priority
-    this.sources = ["qr", "wikt"]; // TODO: add current title
+    this.sources = ["qr", SOURCE_WIKTIONARY]; // TODO: add current title
   }
 
+  /**
+   * return a list of defintions for the given language, word and definition source
+   */
   getDefinitions(language, word, source) {
     const sources = this.sources.slice();
     if (source) {
@@ -57,6 +62,39 @@ export class DefinitionService {
           return [];
         }
       );
+  }
+
+  /**
+   * return a list of defintions for the given language, word and definition source,
+   * modified for usage in a quiz
+   */
+  getQuizDefinitions(language, word, source) {
+    return new Promise((resolve, reject) => {
+      this.getDefinitions(language, word, source).then((defs) => {
+        let ret = [];
+        defs.forEach((def) => {
+          // check for offensive or unlikely glosses
+          const checks = ["vulgar", "BDSM", "LGBT"];
+          let pass = true;
+          checks.forEach((str) => {
+            if (def.x.includes(str)) {
+              pass = false;
+            }
+          });
+          if (pass) {
+            const newdef = Object.assign({}, def);
+            // remove initial non-gloss definitions in leading parenthesis
+            newdef.x = def.x.replace(/^\([^\)]*\)\s*/, "");
+            ret.push(newdef);
+          }
+        });
+        // remove identical defs
+        ret = ret.filter(
+          (obj, i) => i === ret.findIndex((o) => o.t === obj.t && o.x === obj.x)
+        );
+        resolve(ret);
+      });
+    });
   }
 
   defPath(language, word) {

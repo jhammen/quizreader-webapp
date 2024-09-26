@@ -139,7 +139,7 @@ class QuizView extends LitElement {
 
   addChoice(word, index) {
     // private
-    services.defservice.getDefinitions(this.language, word).then(
+    services.defservice.getQuizDefinitions(this.language, word).then(
       function (defs) {
         if (defs.length) {
           this.choice[index] = defs.map((item) => item.x).slice(0, 3);
