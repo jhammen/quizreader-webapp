@@ -27,7 +27,7 @@ class VocabView extends LitElement {
       language: { type: String },
       active: { type: Boolean },
       words: { type: Array },
-      defWord: { type: String }
+      defword: { state: true }
     };
   }
   render() {
@@ -78,14 +78,17 @@ class VocabView extends LitElement {
             (item) =>
               html`<a
                 class="${item.type}"
-                @click="${() => (this.defWord = JSON.stringify(item))}"
+                @click="${() => (this.defword = item)}"
                 >${item.word}</a
               > `
           )}
         </div>
         <def-popup
           language="${this.language}"
-          word="${this.defWord}"
+          .word="${this.defword}"
+          @closed=${() => {
+            this.defword = null;
+          }}
         ></def-popup>
       </div>
     `;
@@ -94,7 +97,7 @@ class VocabView extends LitElement {
   constructor() {
     super();
     this.words = [];
-    this.defWord = "";
+    this.defword = null;
   }
 
   get active() {

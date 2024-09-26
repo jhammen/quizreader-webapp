@@ -21,16 +21,14 @@ import { html, LitElement } from "lit-element";
 import { services } from "../services.js";
 
 class DefPopup extends LitElement {
-  static get properties() {
-    return {
-      language: { type: String },
-      work: { type: String },
-      word: { type: Object },
-      defs: { type: Array },
-      roots: { type: Array },
-      visible: { type: Boolean }
-    };
-  }
+  static properties = {
+    language: { type: String },
+    work: { type: String },
+    word: { type: Object },
+    defs: { state: true },
+    roots: { state: true },
+    visible: { state: true }
+  };
 
   constructor() {
     super();
@@ -75,6 +73,40 @@ class DefPopup extends LitElement {
     document.removeEventListener("mouseup", this.dragStop);
   }
 
+  close() {
+    this.visible = false;
+    this.dispatchEvent(new CustomEvent("closed", {}));
+  }
+
+  get word() {
+    return this._word;
+  }
+
+  set word(value) {
+    this._word = value;
+    if (value) {
+      const defservice = services.defservice;
+      defservice
+        .getDefinitions(this.language, value, this.work)
+        .then((defs) => {
+          this.defs = defs.length ? defs : [{ s: "qr" }];
+        });
+      this.roots = [];
+      if (value.root) {
+        defservice
+          .getDefinitions(
+            this.language,
+            { word: value.root, type: value.type },
+            this.work
+          )
+          .then((defs) => {
+            this.roots = defs;
+          });
+      }
+      this.visible = true;
+    }
+  }
+
   render() {
     return html`
       <style>
@@ -113,12 +145,7 @@ class DefPopup extends LitElement {
       </style>
       <div id="outer">
         <div id="header" @mousedown="${this.dragStart}">
-          <a
-            id="close-button"
-            title="Close"
-            @click="${() => (this.visible = false)}"
-            >&times;</a
-          >
+          <a id="close-button" title="Close" @click="${this.close}">&times;</a>
         </div>
         <div id="content">
           <h2>${this.defs[0].w}</h2>
@@ -138,30 +165,6 @@ class DefPopup extends LitElement {
         </div>
       </div>
     `;
-  }
-
-  set word(value) {
-    if (value) {
-      const defservice = services.defservice;
-      defservice
-        .getDefinitions(this.language, value, this.work)
-        .then((defs) => {
-          this.defs = defs.length ? defs : [{ s: "qr" }];
-        });
-      this.roots = [];
-      if (value.root) {
-        defservice
-          .getDefinitions(
-            this.language,
-            { word: value.root, type: value.type },
-            this.work
-          )
-          .then((defs) => {
-            this.roots = defs;
-          });
-      }
-      this.visible = true;
-    }
   }
 }
 

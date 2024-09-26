@@ -27,7 +27,7 @@ class TextView extends LitElement {
       language: { type: String },
       location: { type: String },
       paragraph: { type: Number },
-      defWord: { type: String }
+      defword: { state: true }
     };
   }
 
@@ -51,7 +51,10 @@ class TextView extends LitElement {
       <def-popup
         language="${this.language}"
         work="${this.work}"
-        word="${this.defWord}"
+        .word=${this.defword}
+        @closed=${() => {
+          this.defword = null;
+        }}
       ></def-popup>`;
   }
 
@@ -59,7 +62,7 @@ class TextView extends LitElement {
     super();
     this.file = 0;
     this.paragraph = 0;
-    this.defWord = "null";
+    this.defword = null;
   }
 
   get location() {
@@ -200,11 +203,11 @@ class TextView extends LitElement {
   showDef(evt) {
     const elem = evt.target;
     const word = elem.dataset.word;
-    this.defWord = JSON.stringify({
+    this.defword = {
       word: word ? word : elem.textContent,
       root: elem.dataset.base,
       type: elem.dataset.type
-    });
+    };
   }
 }
 
