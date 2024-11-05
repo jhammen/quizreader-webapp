@@ -42,7 +42,7 @@ class TitleList extends LitElement {
           padding: 1.5%;
         }
         .linkdiv {
-          height: 20%;
+          height: 10%;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -73,7 +73,12 @@ class TitleList extends LitElement {
                   <div class="linkdiv">
                     <app-link
                       href="/${this.language}/read/${item.path}"
-                      text="${item.name}"
+                      text="${item.obj.title}"></app-link>
+                  </div>
+                  <div class="linkdiv">
+                    <app-link
+                      href="/${this.language}/read/${item.path}"
+                      text="${item.obj.author}"
                     ></app-link>
                   </div>
                   <div class="imgdiv">
@@ -112,7 +117,7 @@ class TitleList extends LitElement {
             for (const path in json) {
               titles.push({
                 path: path,
-                name: json[path]
+                obj: json[path]
               });
             }
             this.titles = titles;
