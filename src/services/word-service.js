@@ -34,7 +34,7 @@ export class WordService {
         (allwords) => {
           // loop over all known words from db
           let count = 0;
-          for (const word in allwords) {
+          for (const word of allwords) {
             // add to local cache of known words
             this.#addKnownWord(word);
             // add to pool of quiz words
