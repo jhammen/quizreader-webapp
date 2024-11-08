@@ -98,7 +98,9 @@ class QrApp extends LitElement {
             (count) => {
               // show the word count for this language
               this.updateCount({ language: lang, count: count });
-              this.go(command, lang, arg);
+              services.defservice.init(lang).then(
+                () => this.go(command, lang, arg)
+              );
             },
             (e) => console.log("Error initializing WordService", e)
           );

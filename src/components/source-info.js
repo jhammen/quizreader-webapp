@@ -16,56 +16,55 @@
  */
 import { LitElement, html } from "lit-element";
 
-class SourceInfo extends LitElement {
-  static get properties() {
-    return {
-      source: String,
-      label: String,
-      info: Object
-    };
-  }
+import { services } from "../services.js";
 
-  render() {
-    return html` <style>
-        .source {
-          font-size: 9pt;
-        }
-        .source a {
-          font-size: 7pt;
-          text-decoration: none;
-        }
-      </style>
-      ${this.info
-        ? html`<div class="source">
-            ${this.label}: <i>${this.info.name}</i>
-            <a href="${this.info.llink}">${this.info.license}</a>
-          </div>`
-        : ``}`;
+class SourceInfo extends LitElement {
+  static properties = {
+    source: String,
+    label: String,
+    info: Object
   }
 
   constructor() {
     super();
     this.label = "source";
     this.info = {};
-    // TODO: move mapping to external file
-    this.data = {
-      qr: {
-        name: "quizreader.org",
-        license: "CC BY-NC-SA 4.0",
-        llink: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
-      },
-      wikt: {
-        name: "wiktionary.org",
-        license: "CC BY-SA 3.0",
-        llink: "https://creativecommons.org/licenses/by-sa/3.0/"
-      }
-    };
+    this.licenseLink = {
+      "CC BY-NC-SA 4.0": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "CC BY-SA 3.0": "https://creativecommons.org/licenses/by-sa/3.0/"
+    }
+  }
+
+  get source() {
+    return this._source;
   }
 
   set source(value) {
     if (value) {
-      this.info = this.data[value];
+      this.info = services.defservice.getSourceInfo(value);
     }
+    this._source = value;
+  }
+
+  render() {
+    return this.info ? this.renderSource() : html``;
+  }
+
+  renderSource() {
+    return html`<style>
+      .source {
+        font-size: 9pt;
+      }
+      .source a {
+        font-size: 7pt;
+        text-decoration: none;
+      }
+    </style>   
+        <div class="source">
+          source: <i>${this.info.name}</i>
+          ${this.info.license ? html`<a href="${this.licenseLink[this.info.license]}">${this.info.license}</a>` : ``}
+        </div>
+        `;
   }
 }
 

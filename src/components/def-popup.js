@@ -32,7 +32,7 @@ class DefPopup extends LitElement {
 
   constructor() {
     super();
-    this.defs = [{ s: "qr" }];
+    this.defs = [];
     this.roots = [];
     // bind context so these methods can be referenced in removeEventListener
     this.dragMove = this.dragMove.bind(this);
@@ -89,7 +89,7 @@ class DefPopup extends LitElement {
       defservice
         .getDefinitions(this.language, value, this.work)
         .then((defs) => {
-          this.defs = defs.length ? defs : [{ s: "qr" }];
+          this.defs = defs.length ? defs : [];
         });
       this.roots = [];
       if (value.root) {
@@ -108,6 +108,13 @@ class DefPopup extends LitElement {
   }
 
   render() {
+    if (this.defs.length) {
+      return this.renderDefs();
+    }
+    return html``;
+  }
+
+  renderDefs() {
     return html`
       <style>
         #outer {

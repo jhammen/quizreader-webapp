@@ -15,6 +15,7 @@
  * along with QuizReader.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+const SOURCE_QUIZREADER = "qr";
 const SOURCE_WIKTIONARY = "wikt";
 
 /**
@@ -22,19 +23,35 @@ const SOURCE_WIKTIONARY = "wikt";
  */
 export class DefinitionService {
   constructor() {
+    this.sources = {
+      [SOURCE_QUIZREADER]: { "name": "quizreader.org" },
+      [SOURCE_WIKTIONARY]: { "name": "wiktionary.org", "license": "CC BY-SA 3.0" }
+    };
     // sources sorted by priority
-    this.sources = ["qr", SOURCE_WIKTIONARY]; // TODO: add current title
+    this.sourcelist = [SOURCE_QUIZREADER, SOURCE_WIKTIONARY];
+  }
+
+  init(language) {
+    return new Promise((resolve, reject) => {
+      fetch(language + "/txt/idx.json").then(response => response.json()).then(json => {
+        for (let key in json) {
+          this.sources[key] = { "name": json[key].title }
+        }
+        resolve();
+      })
+    })
   }
 
   /**
    * return a list of defintions for the given language, word and definition source
    */
   getDefinitions(language, word, source) {
-    const sources = this.sources.slice();
+    // copy the sourcelist and insert this source
+    const sources = this.sourcelist.slice();
     if (source) {
       sources.unshift(source);
     }
-    return fetch(this.defPath(language, word.word))
+    return fetch(this.#defPath(language, word.word))
       .then(function (response) {
         return response.json();
       })
@@ -74,7 +91,7 @@ export class DefinitionService {
         let ret = [];
         defs.forEach((def) => {
           // check for offensive or unlikely glosses
-          const checks = ["vulgar", "BDSM", "LGBT"];
+          const checks = ["colloquial", "vulgar", "BDSM", "LGBT"];
           let pass = true;
           checks.forEach((str) => {
             if (def.x.includes(str)) {
@@ -97,7 +114,14 @@ export class DefinitionService {
     });
   }
 
-  defPath(language, word) {
+  /** 
+   * get information about a given source by key 
+   */
+  getSourceInfo(key) {
+    return this.sources[key];
+  }
+
+  #defPath(language, word) {
     const dir = word.length < 2 ? word : word.substring(0, 2);
     return "/" + language + "/def/en/" + dir + "/" + word + ".json";
   }
