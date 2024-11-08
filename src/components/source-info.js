@@ -47,10 +47,10 @@ class SourceInfo extends LitElement {
   }
 
   render() {
-    return this.info ? this.renderSource() : html``;
+    return this.info ? this.#renderSource() : ``;
   }
 
-  renderSource() {
+  #renderSource() {
     return html`<style>
       .source {
         font-size: 9pt;

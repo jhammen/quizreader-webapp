@@ -79,21 +79,21 @@ class TextView extends LitElement {
         this.chapter = parseInt(chapter);
         bservice.paragraph(work, this.chapter).then((paragraph) => {
           this.paragraph = paragraph;
-          this.load();
+          this.#load();
         });
       } else {
         bservice.chapter(work).then((chapter) => {
           this.chapter = chapter;
           bservice.paragraph(work, chapter).then((paragraph) => {
             this.paragraph = paragraph;
-            this.load();
+            this.#load();
           });
         });
       }
     }
   }
 
-  load() {
+  #load() {
     // get TOC for work
     fetch(this.language + "/txt/" + this.work + "/toc.json")
       .then(function (response) {
@@ -123,7 +123,7 @@ class TextView extends LitElement {
             let linkList = para.querySelectorAll("a");
             for (const link of linkList) {
               // get base word + type
-              const base = this.baseWord(link);
+              const base = this.#baseWord(link);
               const type = link.dataset.type;
               // hash for docInfo
               hash[base + ":" + type] = true;
@@ -143,7 +143,7 @@ class TextView extends LitElement {
       );
   }
 
-  baseWord(elem) {
+  #baseWord(elem) {
     if (elem.dataset.base) {
       return elem.dataset.base;
     } else if (elem.dataset.word) {
@@ -177,7 +177,7 @@ class TextView extends LitElement {
       }
     } else {
       // move to next paragraph, show quiz if unknown words
-      let newWords = this.unknownWords(this.docInfo[this.paragraph++]);
+      let newWords = this.#unknownWords(this.docInfo[this.paragraph++]);
       // save paragraph bookmark
       services.bkmkservice.saveParagraph(
         this.work,
@@ -190,7 +190,7 @@ class TextView extends LitElement {
     }
   }
 
-  unknownWords(list) {
+  #unknownWords(list) {
     return list.filter((item) => {
       return (
         item.type != "M" &&

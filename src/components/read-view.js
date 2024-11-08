@@ -55,7 +55,7 @@ class ReadView extends LitElement {
 
   constructor() {
     super();
-    this.init();
+    this.#init();
     this.mode = "read";
     this.quizword = "";
   }
@@ -65,15 +65,15 @@ class ReadView extends LitElement {
   }
 
   set location(value) {
-    this.init(); // refresh view for a new location
+    this.#init(); // refresh view for a new location
     this._location = value;
   }
 
-  quizMode(b) {
+  #quizMode(b) {
     this.mode = b ? "quiz" : "read";
   }
 
-  nextWord() {
+  #nextWord() {
     return JSON.stringify(this.words.pop());
   }
 
@@ -92,26 +92,25 @@ class ReadView extends LitElement {
       const MAX_PER_QUIZ = 3;
       const max = Math.min(MAX_PER_QUIZ, words.length);
       this.words = words.slice(0, max);
-      this.quizword = this.nextWord();
-      this.quizMode(true);
+      this.quizword = this.#nextWord();
+      this.#quizMode(true);
     } else {
-      this.quizMode(false);
+      this.#quizMode(false);
     }
   }
 
   quizAnswer(evt) {
     const success = evt.detail;
     if (this.words.length > 0) {
-      this.quizword = this.nextWord();
+      this.quizword = this.#nextWord();
     } else {
-      this.quizMode(false);
+      this.#quizMode(false);
     }
   }
 
-  init() {
-    // private
+  #init() {   
     this.quizword = "";
-    this.quizMode(false);
+    this.#quizMode(false);
     this.words = [];
   }
 }

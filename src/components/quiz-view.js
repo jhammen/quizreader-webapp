@@ -76,17 +76,17 @@ class QuizView extends LitElement {
 
   // css style for selected answer
   selstyle(i) {
-    return this.selected == i ? (this.correct() ? "right" : "wrong") : "";
+    return this.selected == i ? (this.#correct() ? "right" : "wrong") : "";
   }
 
   constructor() {
     super();
     this.choice = [];
     this._word = {};
-    this.reset();
+    this.#reset();
   }
 
-  reset() {
+  #reset() {
     this.selected = null;
     this.sources = {};
   }
@@ -98,7 +98,7 @@ class QuizView extends LitElement {
   set word(value) {
     if (value) {
       this._word = JSON.parse(value);
-      this.reset();
+      this.#reset();
       // select some words for incorrect definitions
       const type = this._word.type;
       const chosen = [];
@@ -113,21 +113,20 @@ class QuizView extends LitElement {
       this.choice = Array(count);
       // add correct answer
       this.answer = Math.floor(count * Math.random());
-      this.addChoice(this._word, this.answer);
+      this.#addChoice(this._word, this.answer);
       // array to store used indices
       const used = Array(count);
       used[this.answer] = true;
       // add incorrect answers
       for (var i = 1; i < chosen.length; i++) {
-        const index = this.randomIndex(used);
-        this.addChoice({ word: chosen[i], type: type }, index);
+        const index = this.#randomIndex(used);
+        this.#addChoice({ word: chosen[i], type: type }, index);
         used[index] = true;
       }
     }
   }
 
-  randomIndex(used) {
-    // private
+  #randomIndex(used) {    
     const open = [];
     for (var i = 0; i < used.length; i++) {
       if (!used[i]) {
@@ -137,8 +136,7 @@ class QuizView extends LitElement {
     return open[Math.floor(Math.random() * open.length)];
   }
 
-  addChoice(word, index) {
-    // private
+  #addChoice(word, index) {    
     services.defservice.getQuizDefinitions(this.language, word).then(
       function (defs) {
         if (defs.length) {
@@ -156,7 +154,7 @@ class QuizView extends LitElement {
   }
 
   finished() {
-    if (this.correct()) {
+    if (this.#correct()) {
       services.wordservice.saveWord(this.word).then((count) => {
         window.dispatchEvent(
           new CustomEvent("word-count", {
@@ -165,10 +163,10 @@ class QuizView extends LitElement {
         );
       });
     }
-    this.dispatchEvent(new CustomEvent("complete", { detail: this.correct() }));
+    this.dispatchEvent(new CustomEvent("complete", { detail: this.#correct() }));
   }
 
-  correct() {
+  #correct() {
     return this.answer == this.selected;
   }
 
