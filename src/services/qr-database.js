@@ -46,18 +46,19 @@ export class QRDatabase {
         const db = init.target.result;
 
         // bookmark stores: chapter + paragraph
-        db.createObjectStore(this.language + "-" + QRDatabase.STORE_CHAPTER, {
+        db.createObjectStore(this.#storename(QRDatabase.STORE_CHAPTER), {
           keyPath: "work"
         });
-        db.createObjectStore(this.language + "-" + QRDatabase.STORE_PARAGRAPH, {
+        db.createObjectStore(this.#storename(QRDatabase.STORE_PARAGRAPH), {
           keyPath: ["work", "chapter"]
         });
         //  word tables
-        db.createObjectStore(this.language + "-" + QRDatabase.STORE_WORD, {
+        db.createObjectStore(this.#storename(QRDatabase.STORE_WORD), {
           keyPath: ["word", "type"]
         });
 
         db.onerror = (e) => {
+          this.#errorevent(e);
           reject(e);
         };
       });
@@ -69,43 +70,69 @@ export class QRDatabase {
       });
 
       // on error call promise reject()
-      request.addEventListener("error", (e) => reject(e));
+      request.addEventListener("error", (e) => {
+        this.#errorevent(e);
+        reject(e)
+      });
+    });
+  }
+
+  delete() {
+    return new Promise((resolve, reject) => {
+      const request = window.indexedDB.deleteDatabase("quizreader-" + this.language);
+      request.onsuccess = () => resolve();
+      request.onerror = (e) => reject(e);
     });
   }
 
   //  get a single value by key
   get(type, key) {
     return new Promise((resolve, reject) => {
-      const storename = this.#storename(type);
-      const tx = this.db.transaction([storename]);
-      const store = tx.objectStore(storename);
-      const request = store.get(key);
-      request.onsuccess = () => {
-        resolve(request.result);
-      };
-      request.onerror = (e) => {
-        reject(e);
-      };
+      try {
+        const storename = this.#storename(type);
+        const tx = this.db.transaction([storename]);
+        const store = tx.objectStore(storename);
+        const request = store.get(key);
+        request.onsuccess = () => {
+          resolve(request.result);
+        };
+        request.onerror = (e) => {
+          this.#errorevent(e);
+          reject(e);
+        };
+      } catch (ex) {
+        this.#errorevent(ex);
+        reject(ex);
+      }
     });
   }
 
   // get all records for a given store
   getAll(type) {
     return new Promise((resolve, reject) => {
-      const storename = this.#storename(type);
-      const store = this.db.transaction([storename]).objectStore(storename);
-      const request = store.openCursor();
-      const list = [];
-      request.onsuccess = (evt) => {
-        const cursor = evt.target.result;
-        if (cursor) {
-          list.push(cursor.value);
-          cursor.continue();
-        } else {
-          resolve(list);
+      try {
+        const storename = this.#storename(type);
+        const store = this.db.transaction([storename]).objectStore(storename);
+        const request = store.openCursor();
+        const list = [];
+        request.onsuccess = (evt) => {
+          const cursor = evt.target.result;
+          if (cursor) {
+            list.push(cursor.value);
+            cursor.continue();
+          } else {
+            resolve(list);
+          }
+        };
+        request.onerror = (evt) => {
+          this.#errorevent(evt);
+          reject(evt);
         }
-      };
-      request.onerror = (evt) => reject(evt);
+      }
+      catch (ex) {
+        this.#errorevent(ex);
+        reject(ex);
+      }
     });
   }
 
@@ -119,6 +146,7 @@ export class QRDatabase {
       const store = tx.objectStore(storename);
       const request = store.put(value);
       request.onerror = (evt) => {
+        this.#errorevent(evt);
         reject(evt);
       };
       // resolve when tx complete
@@ -126,6 +154,7 @@ export class QRDatabase {
         resolve();
       };
       tx.onerror = (evt) => {
+        this.#errorevent(evt);
         reject(evt);
       };
     });
@@ -142,6 +171,7 @@ export class QRDatabase {
       const store = tx.objectStore(storename);
       const request = store.add(value);
       request.onerror = (event) => {
+        this.#errorevent(event);
         reject(event);
       };
 
@@ -152,6 +182,7 @@ export class QRDatabase {
         count = countRequest.result;
       };
       countRequest.onerror = (event) => {
+        this.#errorevent(event);
         reject(event);
       };
 
@@ -160,6 +191,7 @@ export class QRDatabase {
         resolve(count);
       };
       tx.onerror = (event) => {
+        this.#errorevent(event);
         reject(event);
       };
     });
@@ -171,6 +203,7 @@ export class QRDatabase {
       const tx = this.db.transaction([storename], "readwrite");
       const request = tx.objectStore(storename).delete(obj);
       request.onerror = (event) => {
+        this.#errorevent();
         reject(event);
       };
       request.onsuccess = (event) => {
@@ -181,5 +214,9 @@ export class QRDatabase {
 
   #storename(type) {
     return this.language + "-" + type;
+  }
+
+  #errorevent(evt) {
+    window.dispatchEvent(new CustomEvent("db-error", { detail: evt, bubbles: true, composed: true }));
   }
 }

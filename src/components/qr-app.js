@@ -64,6 +64,14 @@ class QrApp extends LitElement {
     window.addEventListener("word-count", (e) => {
       this.updateCount(e.detail);
     });
+    window.addEventListener("db-error", (e) => {
+      alert("Database Error! " + e.detail);
+      const mesg = "Do you wish to delete your database?";
+      if (confirm(mesg)) {
+        this.db.delete();
+      }
+      window.location.reload();
+    });
   }
 
   firstUpdated(props) {
@@ -87,8 +95,8 @@ class QrApp extends LitElement {
     // is this a new language?
     if (lang && lang != this.language) {
       // open database for this language
-      const db = new QRDatabase(lang);
-      db.init().then(
+      this.db = new QRDatabase(lang);
+      this.db.init().then(
         (qrdb) => {
           // create services for this language
           services.bkmkservice = new BookmarkService(qrdb);
