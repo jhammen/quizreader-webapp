@@ -54,8 +54,11 @@ export class BookmarkService {
       this.db
         .save(QRDatabase.STORE_CHAPTER, { work: work, chapter: chapter })
         .then(
-          () => (this.chapters[work] = chapter),
-          (evt) => reject(evt)
+          () => {
+            this.chapters[work] = chapter;
+            resolve();
+          },
+          evt => reject(evt)
         );
     });
   }
@@ -70,15 +73,13 @@ export class BookmarkService {
 
   remove(work) {
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction([IDBStore.CHAPTER], "readwrite");
-      const request = tx.objectStore(IDBStore.CHAPTER).delete(work);
-      request.onerror = (e) => {
-        reject(e);
-      };
-      request.onsuccess = (event) => {
-        delete this.chapters[work];
-        resolve();
-      };
+      this.db.remove(QRDatabase.STORE_CHAPTER, work).then(
+        () => {
+          delete this.chapters[work];
+          resolve();
+        },
+        e => reject(e)
+      )
     });
   }
 }

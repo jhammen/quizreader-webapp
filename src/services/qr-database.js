@@ -165,6 +165,20 @@ export class QRDatabase {
     });
   }
 
+  remove(type, obj) {
+    return new Promise((resolve, reject) => {
+      const storename = this.#storename(type);
+      const tx = this.db.transaction([storename], "readwrite");
+      const request = tx.objectStore(storename).delete(obj);
+      request.onerror = (event) => {
+        reject(event);
+      };
+      request.onsuccess = (event) => {
+        resolve();
+      };
+    });
+  }
+
   #storename(type) {
     return this.language + "-" + type;
   }

@@ -105,7 +105,7 @@ class QrApp extends LitElement {
             (e) => console.log("Error initializing WordService", e)
           );
         },
-        (e) => console.log("Error opening IDBStore", e)
+        (e) => console.log("Error opening database", e)
       );
     } else {
       this.go(command, lang, arg);

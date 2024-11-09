@@ -53,8 +53,8 @@ class TextView extends LitElement {
         work="${this.work}"
         .word=${this.defword}
         @closed=${() => {
-          this.defword = null;
-        }}
+        this.defword = null;
+      }}
       ></def-popup>`;
   }
 
@@ -160,10 +160,13 @@ class TextView extends LitElement {
       if (this.chapter < this.filecount) {
         const next = this.chapter + 1;
         // save chapter bookmark
-        services.bkmkservice.saveChapter(this.work, next);
-        // request next page
-        const href = `/${this.language}/read/${this.work}.${next}`;
-        window.dispatchEvent(new CustomEvent("link", { detail: href }));
+        services.bkmkservice.saveChapter(this.work, next).then(
+          () => {
+            // request next page
+            const href = `/${this.language}/read/${this.work}.${next}`;
+            window.dispatchEvent(new CustomEvent("link", { detail: href }));
+          }
+        );
       }
       // no more files - finished with title
       else {
