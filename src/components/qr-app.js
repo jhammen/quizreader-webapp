@@ -161,7 +161,7 @@ class QrApp extends LitElement {
             ?inactive="${!this.arg}"
           ></app-link>
           ${this.language
-            ? html`<span class="rightside"
+        ? html`<span class="rightside"
                   >&nbsp;
                   <app-link
                     href="/${this.language}/vocab/${this.work}"
@@ -175,7 +175,7 @@ class QrApp extends LitElement {
                   visible="hidden"
                   src="${this.language}/flag.png"
                 />`
-            : ""}
+        : ""}
         </div>
         <div id="content" class="bubble">
           <qr-router page="${this.command}">
@@ -195,7 +195,6 @@ class QrApp extends LitElement {
               <read-view
                 language="${this.language}"
                 location="${this.arg}"
-                @work-complete="${this.showTitles}"
               ></read-view>
             </div>
             <div slot="vocab">
@@ -213,11 +212,6 @@ class QrApp extends LitElement {
   updateCount(data) {
     this.wordcount[data.language] = String(data.count).padStart(4, "0");
     this.requestUpdate();
-  }
-
-  // show titles page after finished reading a title
-  showTitles() {
-    this.redirect(`/${this.language}/titles`);
   }
 }
 

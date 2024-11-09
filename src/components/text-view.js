@@ -27,7 +27,8 @@ class TextView extends LitElement {
       language: { type: String },
       location: { type: String },
       paragraph: { type: Number },
-      defword: { state: true }
+      defword: { state: true },
+      finished: { state: true }
     };
   }
 
@@ -46,7 +47,8 @@ class TextView extends LitElement {
       </style>
       <div id="scroller">
         <div id="content"></div>
-        <more-button @click="${this.next}"></more-button>
+        ${this.finished ? html`<app-link href="/${this.language}/titles" text="Titles"></app-link>` :
+        html`<more-button @click="${this.next}"></more-button>`}
       </div>
       <def-popup
         language="${this.language}"
@@ -63,6 +65,7 @@ class TextView extends LitElement {
     this.file = 0;
     this.paragraph = 0;
     this.defword = null;
+    this.finished = false;
   }
 
   get location() {
@@ -91,6 +94,7 @@ class TextView extends LitElement {
         });
       }
     }
+    this.finished = false;
   }
 
   #load() {
@@ -173,10 +177,7 @@ class TextView extends LitElement {
         alert("fin");
         // remove bookmarker
         services.bkmkservice.remove(this.work);
-        // notify title complete
-        this.dispatchEvent(
-          new CustomEvent("work-complete", { bubbles: true, composed: true })
-        );
+        this.finished = true;
       }
     } else {
       // move to next paragraph, show quiz if unknown words
