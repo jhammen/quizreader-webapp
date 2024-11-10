@@ -17,6 +17,7 @@
 import "./app-link.js";
 import "./lang-list.js";
 import "./read-view.js";
+import "./settings-view.js"
 import "./title-list.js";
 import "./title-toc.js";
 import "./vocab-list.js";
@@ -167,6 +168,11 @@ class QrApp extends LitElement {
             href="/${this.language}/toc/${this.arg}"
             text="Contents"
             ?inactive="${!this.arg}"
+          ></app-link>          
+          <app-link
+            href="/${this.language}/settings"
+            text="Settings"
+            ?inactive="${!this.language}"
           ></app-link>
           ${this.language
         ? html`<span class="rightside"
@@ -204,6 +210,9 @@ class QrApp extends LitElement {
                 language="${this.language}"
                 location="${this.arg}"
               ></read-view>
+            </div>
+            <div slot="settings">
+              <settings-view language="${this.language}"></settings-view>
             </div>
             <div slot="vocab">
               <vocab-view
