@@ -47,8 +47,8 @@ class TextView extends LitElement {
       </style>
       <div id="scroller">
         <div id="content"></div>
-        ${this.finished ? html`<app-link href="/${this.language}/titles" text="Titles"></app-link>` :
-        html`<more-button @click="${this.next}"></more-button>`}
+        ${this.finished ? this.lastFile() ? html`<app-link href="/${this.language}/titles" text="Available Titles"></app-link>` :
+        html`<more-button @click="${this.nextPage}"></more-button>` : html`<more-button @click="${this.next}"></more-button>`}
       </div>
       <def-popup
         language="${this.language}"
@@ -157,40 +157,48 @@ class TextView extends LitElement {
     }
   }
 
+  showQuiz() {
+    let newWords = this.#unknownWords(this.docInfo[this.paragraph]);
+    if (newWords.length) {
+      this.dispatchEvent(new CustomEvent("new-words", { detail: newWords }));
+    }
+  }
+
+  nextPage() {
+    const href = `/${this.language}/read/${this.work}.${this.chapter + 1}`;
+    window.dispatchEvent(new CustomEvent("link", { detail: href }));
+  }
+
+  lastFile() {
+    return this.chapter == this.filecount
+  }
+
   next() {
     // no more paragraphs in this file
     if (this.paragraph == this.docInfo.length - 1) {
+      this.finished = true;
       // request next file if exists
-      if (this.chapter < this.filecount) {
-        const next = this.chapter + 1;
-        // save chapter bookmark
-        services.bkmkservice.saveChapter(this.work, next).then(
-          () => {
-            // request next page
-            const href = `/${this.language}/read/${this.work}.${next}`;
-            window.dispatchEvent(new CustomEvent("link", { detail: href }));
-          }
-        );
-      }
-      // no more files - finished with title
-      else {
-        alert("fin");
+      if (this.lastFile()) {
+        // no more files - finished with title
         // remove bookmarker
         services.bkmkservice.remove(this.work);
-        this.finished = true;
+        this.showQuiz();
+      }
+      else {
+        // save chapter bookmark
+        services.bkmkservice.saveChapter(this.work, this.chapter + 1).then(
+          () => this.showQuiz());
       }
     } else {
-      // move to next paragraph, show quiz if unknown words
-      let newWords = this.#unknownWords(this.docInfo[this.paragraph++]);
+      this.showQuiz();
+      // move to next paragraph
+      this.paragraph++;
       // save paragraph bookmark
       services.bkmkservice.saveParagraph(
         this.work,
         this.chapter,
         this.paragraph
       );
-      if (newWords.length) {
-        this.dispatchEvent(new CustomEvent("new-words", { detail: newWords }));
-      }
     }
   }
 
