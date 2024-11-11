@@ -24,7 +24,8 @@ class SettingsView extends LitElement {
   static properties = {
     language: { type: String },
     importerror: { state: true },
-    importmesg: { state: true }
+    importmesg: { state: true },
+    maxwords: { state: true }
   };
 
   get language() {
@@ -34,7 +35,7 @@ class SettingsView extends LitElement {
   set language(value) {
     this._language = value;
     if (value) {
-      // read se from storage
+      this.maxwords = services.settingsservice.getWordsPerQuiz();
     }
   }
 
@@ -109,6 +110,11 @@ class SettingsView extends LitElement {
     reader.readAsText(file);
   }
 
+  updateQuizwords(evt) {
+    const max = evt.target.value;
+    services.settingsservice.setWordsPerQuiz(max);
+  }
+
   render() {
     return html`
       <style>
@@ -145,7 +151,7 @@ class SettingsView extends LitElement {
           <div class="tile">
           <div class="tilecontent">
             Max quiz words per paragraph:
-             <input type="number" min="0" max="999" value="5" class="control"/>
+             <input @change="${this.updateQuizwords}" type="number" min="0" max="999" value="${this.maxwords}" class="control"/>
             </div>
           </div>
           <div class="tile">

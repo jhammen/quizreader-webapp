@@ -29,6 +29,7 @@ import { services } from "../services.js";
 import { BookmarkService } from "../services/bookmark-service.js";
 import { DefinitionService } from "../services/definition-service.js";
 import { QRDatabase } from "../services/qr-database.js";
+import { SettingsService } from "../services/settings-service.js";
 import { WordService } from "../services/word-service.js";
 
 const EMPTY_STRING = "";
@@ -103,6 +104,7 @@ class QrApp extends LitElement {
           services.bkmkservice = new BookmarkService(qrdb);
           services.defservice = new DefinitionService(qrdb);
           services.wordservice = new WordService(qrdb);
+          services.settingsservice = new SettingsService(lang);
           services.wordservice.init(lang).then(
             (count) => {
               // show the word count for this language

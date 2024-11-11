@@ -18,6 +18,7 @@ import "./text-view.js";
 import "./quiz-view.js";
 
 import { html, LitElement } from "lit-element";
+import { services } from "../services.js";
 
 class ReadView extends LitElement {
   static get properties() {
@@ -89,8 +90,8 @@ class ReadView extends LitElement {
         words[pick] = orig;
       }
       // truncate to max words
-      const MAX_PER_QUIZ = 3;
-      const max = Math.min(MAX_PER_QUIZ, words.length);
+      const wordsPerQuiz = services.settingsservice.getWordsPerQuiz();
+      const max = Math.min(wordsPerQuiz, words.length);
       this.words = words.slice(0, max);
       this.quizword = this.#nextWord();
       this.#quizMode(true);
@@ -108,7 +109,7 @@ class ReadView extends LitElement {
     }
   }
 
-  #init() {   
+  #init() {
     this.quizword = "";
     this.#quizMode(false);
     this.words = [];
