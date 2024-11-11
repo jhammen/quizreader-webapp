@@ -146,6 +146,7 @@ class QrApp extends LitElement {
         }
         .rightside {
           float: right;
+          margin-left: 7px;
         }
         .outer {
           margin-left: auto;
@@ -169,14 +170,9 @@ class QrApp extends LitElement {
             text="Contents"
             ?inactive="${!this.arg}"
           ></app-link>          
-          <app-link
-            href="/${this.language}/settings"
-            text="Settings"
-            ?inactive="${!this.language}"
-          ></app-link>
           ${this.language
         ? html`<span class="rightside"
-                  >&nbsp;
+                  >
                   <app-link
                     href="/${this.language}/vocab/${this.work}"
                     text="${this.wordcount[this.language]}"
@@ -188,7 +184,13 @@ class QrApp extends LitElement {
                   class="rightside"
                   visible="hidden"
                   src="${this.language}/flag.png"
-                />`
+                />
+                <span class="rightside"
+                  ><app-link
+                  href="/${this.language}/settings"
+                  text="⚙️"
+                  ?inactive="${!this.language}"
+                ></app-link>&nbsp;</span>`
         : ""}
         </div>
         <div id="content" class="bubble">
