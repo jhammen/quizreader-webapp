@@ -197,6 +197,46 @@ export class QRDatabase {
     });
   }
 
+  // save multiple values to a store and return the total count
+  saveAll(type, values) {
+    const storename = this.#storename(type);
+    return new Promise((resolve, reject) => {
+      // open transaction
+      const tx = this.db.transaction([storename], "readwrite");
+      const store = tx.objectStore(storename);
+
+      // loop over values
+      for (const value of values) {
+        // request to put entry
+        const request = store.put(value);
+        request.onerror = (event) => {
+          console.log(event)
+          reject(event);
+        };
+      }
+
+      // request to count entries
+      const countRequest = store.count();
+      let count = 0;
+      countRequest.onsuccess = (event) => {
+        count = countRequest.result;
+      };
+      countRequest.onerror = (event) => {
+        console.log(event)
+        reject(event);
+      };
+
+      // resolve when tx complete
+      tx.oncomplete = (event) => {
+        resolve(count);
+      };
+      tx.onerror = (event) => {
+        console.log(event)
+        reject(event);
+      };
+    });
+  }
+
   remove(type, obj) {
     return new Promise((resolve, reject) => {
       const storename = this.#storename(type);

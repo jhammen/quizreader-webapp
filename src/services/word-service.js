@@ -100,6 +100,21 @@ export class WordService {
     });
   }
 
+  // save multiple words, returns count of all words
+  saveWords(words) {
+    return new Promise((resolve, reject) => {
+      this.db.saveAll(QRDatabase.STORE_WORD, words).then(
+        (count) => {
+          for (const word of words) {
+            this.#typeMap(word.type)[word.word] = true;
+          }
+          resolve(count);
+        },
+        (evt) => reject(evt)
+      );
+    });
+  }
+
   // add a word as known
   #addKnownWord(word) {
     this.#typeMap(word.type)[word.word] = true;
