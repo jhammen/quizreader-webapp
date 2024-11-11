@@ -70,6 +70,7 @@ class SettingsView extends LitElement {
     const file = evt.target.files[0];
     // test file type
     this.importerror = null;
+    this.importmesg = null;
     if (!file.type.startsWith('application/json')) {
       this.importerror = "import upload should be a json file";
       return;
