@@ -161,16 +161,22 @@ class QrApp extends LitElement {
       </style>
       <div class="outer">
         <div class="bubble navbar">
-          <app-link href="/" text="Home"></app-link>
+          <app-link 
+            href="/" 
+            text="Home"
+            ?chosen="${this.command == 'home'}"
+          ></app-link>
           <app-link
             href="/${this.language}/titles"
             text="Titles"
             ?inactive="${!this.language}"
+            ?chosen="${this.command == 'titles'}"
           ></app-link>
           <app-link
             href="/${this.language}/toc/${this.arg}"
             text="Contents"
             ?inactive="${!this.arg}"
+            ?chosen="${this.command == 'toc'}"          
           ></app-link>          
           ${this.language
         ? html`<span class="rightside"
@@ -178,6 +184,7 @@ class QrApp extends LitElement {
                   <app-link
                     href="/${this.language}/vocab/${this.work}"
                     text="${this.wordcount[this.language]}"
+                    ?chosen="${this.command == 'vocab'}"
                   ></app-link
                 ></span>
                 <img

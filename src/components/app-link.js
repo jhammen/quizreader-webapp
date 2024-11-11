@@ -21,18 +21,27 @@ class AppLink extends LitElement {
     return {
       href: { type: String },
       text: { type: String },
-      inactive: { type: Boolean }
+      inactive: { type: Boolean },
+      chosen: { type: Boolean }
     };
   }
 
   render() {
     return this.inactive
-      ? html`<style>
+      ? this.renderInactive()
+      : this.chosen ? html`<span>${this.text}</span>`
+      : this.renderLink();
+  }     
+  renderInactive() {
+    return html`<style>
             span {
               color: #bbbbbb;
             }</style
           ><span>${this.text}</span>`
-      : html`<style>
+  }
+
+  renderLink() {
+    return html`<style>
             a {
               color: #5555ff;
               cursor: pointer;
