@@ -161,7 +161,9 @@ class TextView extends LitElement {
     let newWords = this.#unknownWords(this.docInfo[this.paragraph]);
     if (newWords.length) {
       this.dispatchEvent(new CustomEvent("new-words", { detail: newWords }));
+      return true;
     }
+    return false;
   }
 
   nextPage() {
@@ -187,7 +189,11 @@ class TextView extends LitElement {
       else {
         // save chapter bookmark
         services.bkmkservice.saveChapter(this.work, this.chapter + 1).then(
-          () => this.showQuiz());
+          () => {
+            if (!this.showQuiz()) {
+              this.nextPage();
+            }
+          });
       }
     } else {
       this.showQuiz();
