@@ -14,14 +14,13 @@ _paq.push(["enableLinkTracking"]);
 })();
 
 var matamo_lasturl = null;
-/*
-window.addEventListener('pagechange', function(e) {
-  if(matamo_lasturl) {
-    _paq.push([ 'setReferrerUrl', matamo_lasturl ]);
+window.addEventListener('pagechange', function (e) {
+  if (matamo_lasturl) {
+    _paq.push(['setReferrerUrl', matamo_lasturl]);
   }
   const newurl = e.detail;
-  _paq.push([ 'setCustomUrl', newurl ]);
+  _paq.push(['setCustomUrl', newurl]);
   // _paq.push([ 'setDocumentTitle', 'title goes here' ]);
-  _paq.push([ 'trackPageView' ]);
+  _paq.push(['trackPageView']);
   matamo_lasturl = newurl;
-});*/
+});
